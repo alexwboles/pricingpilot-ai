@@ -109,13 +109,13 @@
     computeTiers();
     var c = lastRec.breakdown, segs = P.marginBreakdown(lastRec);
     var html = '<div class="price-big">' + money(lastRec.price) + '</div>' +
-      '<p class="muted">at your ' + c.marginPct + '% target margin</p>' +
+      '<p class="price-sub">at your ' + c.marginPct + '% target margin</p>' +
       '<div class="kv"><span>Labor (' + c.laborHours + 'h × ' + money(c.hourlyRate) + ')</span><span>' + money(c.labor) + '</span></div>' +
       '<div class="kv"><span>Materials</span><span>' + money(c.materials) + '</span></div>' +
       '<div class="kv"><span>Other costs</span><span>' + money(c.other) + '</span></div>' +
       '<div class="kv"><span>Overhead (' + c.overheadPct + '%)</span><span>' + money(c.overhead) + '</span></div>' +
       '<div class="kv"><strong>Total cost</strong><strong>' + money(c.fullCost) + '</strong></div>' +
-      '<div class="kv"><span>Profit baked in</span><span>' + money(lastRec.profit) + '</span></div>' +
+      '<div class="kv"><span>Profit baked in</span><span class="profit">' + money(lastRec.profit) + '</span></div>' +
       '<h3>Price breakdown</h3>' + breakdownBar(segs);
     $('calcResult').innerHTML = html;
     $('tierBase').textContent = money(lastRec.price);
@@ -132,13 +132,22 @@
       var tier = lastTiers.filter(function (t) { return t.key === k; })[0];
       var feats = tier ? tier.features : P.TIER_TEMPLATES[k];
       var div = document.createElement('div');
-      div.className = 'tier-card';
+      div.className = 'tier-card tier-' + k;
       div.innerHTML =
+        '<div class="tier-head"><span class="tname">' + esc(state.names[k]) + '</span>' +
+        '<span class="tier-mult">' + esc(state.multipliers[k]) + '×</span></div>' +
         '<label>Name <input data-k="' + k + '" data-f="name" value="' + esc(state.names[k]) + '"></label>' +
         '<label>Multiplier <input data-k="' + k + '" data-f="mult" type="number" min="0.1" step="0.05" value="' + esc(state.multipliers[k]) + '"></label>' +
         '<label>Inclusions (one per line)<textarea data-k="' + k + '" data-f="feats">' +
         esc(feats.join('\n')) + '</textarea></label>';
       box.appendChild(div);
+    });
+    // live-sync tier header names with the name inputs
+    box.querySelectorAll('input[data-f="name"]').forEach(function (inp) {
+      inp.addEventListener('input', function () {
+        var head = inp.closest('.tier-card').querySelector('.tname');
+        if (head) head.textContent = inp.value.trim() || inp.dataset.k;
+      });
     });
   }
 
@@ -175,8 +184,9 @@
     rows.forEach(function (r) {
       var diff = Math.round((r.marginPct - lastRec.breakdown.marginPct) * 10) / 10;
       var note = diff >= 0 ? '+' + diff + ' pts' : diff + ' pts';
+      var cls = diff > 0 ? 'delta up' : diff < 0 ? 'delta down' : 'delta';
       html += '<tr><td><strong>' + esc(r.name) + '</strong></td><td>' + money(r.price) + '</td><td>' +
-        r.marginPct + '%</td><td class="muted">' + note + '</td></tr>';
+        r.marginPct + '%</td><td><span class="' + cls + '">' + note + '</span></td></tr>';
     });
     box.innerHTML = html + '</table>';
   }
@@ -192,10 +202,10 @@
     var report = P.positioningReport(lastTiers, comps);
     var html = '';
     report.forEach(function (r) {
-      html += '<div class="pos-advice"><strong>' + esc(r.tierName) + '</strong> — ' + money(r.price) + ' ' +
+      html += '<div class="pos-advice ' + r.verdict + '"><strong>' + esc(r.tierName) + '</strong> — ' + money(r.price) + ' ' +
         '<span class="flag ' + r.verdict + '">' +
-        (r.verdict === 'no-data' ? 'no data' : r.verdict.toUpperCase()) + '</span><br>' +
-        esc(r.advice) + '</div>';
+        (r.verdict === 'no-data' ? 'no data' : r.verdict.toUpperCase()) + '</span>' +
+        '<p>' + esc(r.advice) + '</p></div>';
     });
     html += '<p><strong>Overall:</strong> ' + esc(P.positioningSummary(report)) + '</p>';
     $('posResult').innerHTML = html;
@@ -216,15 +226,15 @@
       tiers: lastTiers, tierMargins: rows,
       recommendedKey: state.recTier, validDays: state.validDays
     });
-    var html = '<div class="sheet-head">' +
+    var html = '<div class="sheet-doc"><div class="sheet-head">' +
       '<div class="sheet-biz">' + esc(page.businessName) + '</div>' +
       '<div class="sheet-svc">' + esc(page.serviceName) + '</div>' +
-      '<p class="muted small">Priced with PricingPilot AI · ' + esc(page.generated) + ' · Valid until ' + esc(page.validUntil) + '</p></div>';
-    html += '<div class="grid-3">';
+      '<p class="sheet-meta">Priced with PricingPilot AI · ' + esc(page.generated) + ' · Valid until ' + esc(page.validUntil) + '</p></div>';
+    html += '<div class="sheet-tiers">';
     page.tiers.forEach(function (t) {
       var rec = t.key === page.recommendedKey;
-      html += '<div class="tier-card' + (rec ? ' recommended' : '') + '">' +
-        (rec ? '<div class="badge">★ RECOMMENDED</div>' : '') +
+      html += '<div class="sheet-tier' + (rec ? ' recommended' : '') + '">' +
+        (rec ? '<div class="badge">RECOMMENDED</div>' : '') +
         '<h3>' + esc(t.name) + '</h3><div class="tier-price">' + money(t.price) + '</div><ul>' +
         t.features.map(function (f) { return '<li>' + esc(f) + '</li>'; }).join('') + '</ul></div>';
     });
@@ -234,7 +244,8 @@
       html += '<tr><td>' + esc(r.name) + '</td><td>' + money(r.price) + '</td><td>' + r.marginPct + '%</td></tr>';
     });
     html += '</table><p class="muted small">This quote is valid until ' + esc(page.validUntil) + '.</p>';
-    html += '<div class="sheet-actions no-print"><button id="printSheet" class="primary">🖨️ Print one-pager</button></div>';
+    html += '<div class="sheet-actions no-print"><button id="printSheet" class="primary">Print one-pager</button></div>';
+    html += '</div>';
     $('sheetWrap').innerHTML = html;
     $('printSheet').addEventListener('click', function () { window.print(); });
   });
@@ -260,7 +271,7 @@
       var d = new Date(q.savedAt);
       row.innerHTML = '<div><strong>' + esc(q.name) + '</strong><br><span class="muted small">saved ' +
         esc(d.toLocaleDateString()) + '</span></div>' +
-        '<div><button class="ghost">Load</button> <button class="danger">Delete</button></div>';
+        '<div class="qbtns"><button class="ghost">Load</button> <button class="danger">Delete</button></div>';
       row.querySelector('.ghost').addEventListener('click', function () {
         state = q.state; saveState(state); fillInputs(); calculate();
         alert('Loaded "' + q.name + '".');

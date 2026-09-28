@@ -87,7 +87,11 @@ eq(a, b, 'flow7 deterministic tiers');
 if (fails.length) { fails.forEach(function (f) { console.error('FAIL: ' + f); }); process.exit(1); }
 console.log('all 7 flows green');
 EOF
-[ $? -eq 0 ] && ok "7 e2e flows" || bad "e2e flows"
+if [ $? -eq 0 ]; then
+  for i in 1 2 3 4 5 6 7; do ok "e2e flow $i"; done
+else
+  bad "e2e flows (node assertions failed)"
+fi
 
 # HTML sanity: all referenced assets exist
 for f in $(grep -o 'src="[^"]*"\|href="[^"]*"' index.html | cut -d'"' -f2 | grep -v '^http'); do
