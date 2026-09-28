@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PricingPilot AI — Price every job right</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">🧭 PricingPilot <span>AI</span></div>
+  <nav>
+    <button data-view="calc" class="active">Calculator</button>
+    <button data-view="tiers">Tiers</button>
+    <button data-view="present">Present</button>
+  </nav>
+</header>
+
+<main>
+  <!-- CALCULATOR VIEW -->
+  <section id="view-calc" class="view">
+    <div class="grid">
+      <div class="card">
+        <h2>Job costs</h2>
+        <div class="two">
+          <label>Labor hours <input id="inHours" type="number" min="0" step="0.25" placeholder="4"></label>
+          <label>Hourly rate ($) <input id="inRate" type="number" min="0" step="0.01" placeholder="75"></label>
+        </div>
+        <div class="two">
+          <label>Materials ($) <input id="inMaterials" type="number" min="0" step="0.01" placeholder="120"></label>
+          <label>Other costs ($) <input id="inOther" type="number" min="0" step="0.01" placeholder="30"></label>
+        </div>
+        <div class="two">
+          <label>Overhead % <input id="inOverhead" type="number" min="0" step="0.5" placeholder="15"></label>
+          <label>Target margin % <input id="inMargin" type="number" min="0" max="95" step="1" value="40"></label>
+        </div>
+        <button id="calcBtn" class="primary">💰 Calculate recommended price</button>
+        <p class="muted small">Margin is capped at 95%. Negative inputs are treated as zero.</p>
+      </div>
+      <div class="card">
+        <h2>Recommended price</h2>
+        <div id="calcResult"><p class="muted">Enter your costs and hit calculate.</p></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>💾 Saved quotes</h2>
+      <div class="two">
+        <label>Quote name <input id="quoteName" placeholder="e.g. Smith kitchen refit"></label>
+        <div><label>&nbsp;</label><button id="saveQuote" class="primary" style="margin-top:0">Save current scenario</button></div>
+      </div>
+      <div id="quoteList"><p class="muted">No saved quotes yet.</p></div>
+    </div>
+  </section>
+
+  <!-- TIERS VIEW -->
+  <section id="view-tiers" class="view hidden">
+    <div class="card">
+      <h2>3-tier pricing</h2>
+      <p class="muted">Built from your recommended price (<strong id="tierBase">$0.00</strong>). Multipliers and names are editable.</p>
+      <div class="grid-3" id="tierEditors"></div>
+      <button id="regenTiers" class="primary">✨ Regenerate tiers</button>
+      <p class="muted small">Tip: edit the inclusion lists on the Present view — additions are saved automatically.</p>
+    </div>
+    <div class="card">
+      <h2>Margin per tier</h2>
+      <div id="tierMarginTable"><p class="muted">Calculate a price first.</p></div>
+    </div>
+    <div class="card">
+      <h2>🏁 Competitor positioning</h2>
+      <p class="muted">Enter up to 3 competitor prices for a comparable job.</p>
+      <div class="two">
+        <label>Competitor 1 ($) <input id="comp1" type="number" min="0" step="0.01"></label>
+        <label>Competitor 2 ($) <input id="comp2" type="number" min="0" step="0.01"></label>
+      </div>
+      <label>Competitor 3 ($) <input id="comp3" type="number" min="0" step="0.01"></label>
+      <button id="posBtn" class="primary">📊 Check positioning</button>
+      <div id="posResult"></div>
+    </div>
+  </section>
+
+  <!-- PRESENT VIEW -->
+  <section id="view-present" class="view hidden">
+    <div class="card no-print">
+      <h2>One-pager setup</h2>
+      <div class="two">
+        <label>Business name <input id="bizName" placeholder="Your Business"></label>
+        <label>Service name <input id="svcName" placeholder="e.g. Full bathroom retile"></label>
+      </div>
+      <div class="two">
+        <label>Quote valid (days) <input id="validDays" type="number" min="1" value="30"></label>
+        <label>Recommended tier
+          <select id="recTier">
+            <option value="budget">Budget</option>
+            <option value="standard" selected>Standard</option>
+            <option value="premium">Premium</option>
+          </select>
+        </label>
+      </div>
+      <button id="renderSheet" class="primary">📄 Render one-pager</button>
+    </div>
+    <div class="card sheet" id="sheetWrap">
+      <p class="muted">Set your details and render — then print or save as PDF.</p>
+    </div>
+  </section>
+</main>
+
+<script src="lib/logic.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
