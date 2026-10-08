@@ -108,6 +108,7 @@
     lastRec = P.recommendedPrice(raw);
     computeTiers();
     var c = lastRec.breakdown, segs = P.marginBreakdown(lastRec);
+    var effRate = P.effectiveHourlyRate(lastRec.price, c.laborHours);
     var html = '<div class="price-big">' + money(lastRec.price) + '</div>' +
       '<p class="price-sub">at your ' + c.marginPct + '% target margin</p>' +
       '<div class="kv"><span>Labor (' + c.laborHours + 'h × ' + money(c.hourlyRate) + ')</span><span>' + money(c.labor) + '</span></div>' +
@@ -116,6 +117,8 @@
       '<div class="kv"><span>Overhead (' + c.overheadPct + '%)</span><span>' + money(c.overhead) + '</span></div>' +
       '<div class="kv"><strong>Total cost</strong><strong>' + money(c.fullCost) + '</strong></div>' +
       '<div class="kv"><span>Profit baked in</span><span class="profit">' + money(lastRec.profit) + '</span></div>' +
+      '<div class="kv"><span>Effective hourly rate</span><span>' +
+      (effRate === null ? '<span class="muted">— (enter labor hours)</span>' : money(effRate) + ' / hr') + '</span></div>' +
       '<h3>Price breakdown</h3>' + breakdownBar(segs);
     $('calcResult').innerHTML = html;
     $('tierBase').textContent = money(lastRec.price);
@@ -180,13 +183,15 @@
     var box = $('tierMarginTable');
     if (!lastRec || !lastTiers.length) { box.innerHTML = '<p class="muted">Calculate a price first.</p>'; return; }
     var rows = P.tierMarginTable(lastTiers, lastRec.breakdown.fullCost);
-    var html = '<table class="margins"><tr><th>Tier</th><th>Price</th><th>Margin</th><th>vs target</th></tr>';
+    var html = '<table class="margins"><tr><th>Tier</th><th>Price</th><th>Margin</th><th>vs target</th><th>Eff. $/hr</th></tr>';
     rows.forEach(function (r) {
       var diff = Math.round((r.marginPct - lastRec.breakdown.marginPct) * 10) / 10;
       var note = diff >= 0 ? '+' + diff + ' pts' : diff + ' pts';
       var cls = diff > 0 ? 'delta up' : diff < 0 ? 'delta down' : 'delta';
+      var eff = P.effectiveHourlyRate(r.price, lastRec.breakdown.laborHours);
       html += '<tr><td><strong>' + esc(r.name) + '</strong></td><td>' + money(r.price) + '</td><td>' +
-        r.marginPct + '%</td><td><span class="' + cls + '">' + note + '</span></td></tr>';
+        r.marginPct + '%</td><td><span class="' + cls + '">' + note + '</span></td><td>' +
+        (eff === null ? '—' : money(eff)) + '</td></tr>';
     });
     box.innerHTML = html + '</table>';
   }
@@ -262,26 +267,71 @@
   });
 
   function renderQuotes() {
-    var qs = loadQuotes(), box = $('quoteList');
-    if (!qs.length) { box.innerHTML = '<p class="muted">No saved quotes yet.</p>'; return; }
+    var box = $('quoteList');
+    var searchEl = $('quoteSearch');
+    var q = searchEl ? searchEl.value : '';
+    var qs = P.filterQuotes(loadQuotes(), q);
+    if (!qs.length) {
+      box.innerHTML = loadQuotes().length
+        ? '<p class="muted">No quotes match "' + esc(q) + '".</p>'
+        : '<p class="muted">No saved quotes yet.</p>';
+      return;
+    }
     box.innerHTML = '';
-    qs.forEach(function (q) {
+    qs.forEach(function (quote) {
       var row = document.createElement('div');
       row.className = 'quote-row';
-      var d = new Date(q.savedAt);
-      row.innerHTML = '<div><strong>' + esc(q.name) + '</strong><br><span class="muted small">saved ' +
+      var d = new Date(quote.savedAt);
+      row.innerHTML = '<div><strong>' + esc(quote.name) + '</strong><br><span class="muted small">saved ' +
         esc(d.toLocaleDateString()) + '</span></div>' +
-        '<div class="qbtns"><button class="ghost">Load</button> <button class="danger">Delete</button></div>';
-      row.querySelector('.ghost').addEventListener('click', function () {
-        state = q.state; saveState(state); fillInputs(); calculate();
-        alert('Loaded "' + q.name + '".');
+        '<div class="qbtns"><button class="ghost" data-act="load">Load</button> ' +
+        '<button class="ghost" data-act="dup">Duplicate</button> ' +
+        '<button class="danger" data-act="del">Delete</button></div>';
+      row.querySelector('[data-act="load"]').addEventListener('click', function () {
+        state = quote.state; saveState(state); fillInputs(); calculate();
+        alert('Loaded "' + quote.name + '".');
       });
-      row.querySelector('.danger').addEventListener('click', function () {
-        if (confirm('Delete "' + q.name + '"?')) { saveQuotes(loadQuotes().filter(function (x) { return x.id !== q.id; })); renderQuotes(); }
+      row.querySelector('[data-act="dup"]').addEventListener('click', function () {
+        var res = P.duplicateQuote(loadQuotes(), quote.id);
+        saveQuotes(res.quotes);
+        renderQuotes();
+        alert('Duplicated as "' + res.duplicated.name + '".');
+      });
+      row.querySelector('[data-act="del"]').addEventListener('click', function () {
+        if (confirm('Delete "' + quote.name + '"?')) { saveQuotes(loadQuotes().filter(function (x) { return x.id !== quote.id; })); renderQuotes(); }
       });
       box.appendChild(row);
     });
   }
+
+  function downloadCSV(filename, text) {
+    var blob = new Blob([text], { type: 'text/csv;charset=utf-8' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function () { URL.revokeObjectURL(a.href); }, 5000);
+  }
+
+  $('exportQuotes').addEventListener('click', function () {
+    var qs = loadQuotes();
+    if (!qs.length) { alert('No saved quotes to export yet.'); return; }
+    downloadCSV('pricingpilot-quotes.csv', P.quotesToCSV(qs));
+  });
+
+  var searchBox = $('quoteSearch');
+  if (searchBox) searchBox.addEventListener('input', renderQuotes);
+
+  // Ctrl/Cmd+Enter anywhere on the calculator step re-runs the estimate.
+  document.addEventListener('keydown', function (e) {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter' &&
+        !$('view-calc').classList.contains('hidden')) {
+      e.preventDefault();
+      calculate();
+    }
+  });
 
   fillInputs();
   renderQuotes();

@@ -58,7 +58,8 @@
             <div class="f-input"><input id="inMargin" type="number" min="0" max="95" step="1" value="40"><em>%</em></div></label>
         </div>
         <button id="calcBtn" class="primary">Calculate recommended price</button>
-        <p class="muted small note">Margin is capped at 95%. Negative inputs are treated as zero — nothing leaks in by accident.</p>
+        <p class="muted small note">Margin is capped at 95%. Negative inputs are treated as zero — nothing leaks in by accident.
+          Tip: press <kbd>Ctrl</kbd>+<kbd>Enter</kbd> (<kbd>⌘</kbd>+<kbd>Enter</kbd> on Mac) to recalculate from anywhere on this step.</p>
       </div>
 
       <div class="card sheet">
@@ -74,6 +75,10 @@
         <label class="field grow"><span class="f-label">Quote name</span>
           <input id="quoteName" placeholder="e.g. Smith kitchen refit"></label>
         <div class="field align-end"><button id="saveQuote" class="primary">Save current scenario</button></div>
+      </div>
+      <div class="qtools">
+        <input id="quoteSearch" type="search" placeholder="Search saved quotes…" aria-label="Search saved quotes">
+        <button id="exportQuotes" class="ghost">Export CSV</button>
       </div>
       <div id="quoteList"><p class="muted">No saved quotes yet.</p></div>
     </div>

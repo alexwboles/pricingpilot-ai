@@ -13,7 +13,9 @@ Type in your costs and PricingPilot AI:
 3. **Shows your margin breakdown** — an SVG stacked bar splitting the price into labor, materials, overhead, and profit, plus a per-tier margin % table so you can see what each tier really earns you.
 4. **Checks competitor positioning** — enter 1–3 competitor prices and get a verdict per tier (undercut / aligned / premium) with plain-language positioning advice from local heuristics (e.g. priced 15% above a competitor → "lean on quality guarantees…").
 5. **Prints a price-presentation one-pager** — business + service name, the 3 tiers as cards with a highlighted recommended tier, margin table, and a "valid until" date. Print button with clean print CSS.
-6. **Saves quotes** — name and save any pricing scenario to localStorage; reload or delete it later.
+6. **Saves quotes** — name and save any pricing scenario to localStorage; reload, duplicate, or delete it later. Search saved quotes by name, and export them all to CSV (tier prices + margins) for your books.
+7. **Effective hourly rate** — see what you actually earn per labor hour at the recommended price and per tier — a sanity check that you're hitting your rate.
+8. **Keyboard shortcut** — Ctrl+Enter (⌘+Enter on Mac) recalculates from anywhere on the estimate step.
 
 Everything runs **locally in the browser** (localStorage). No account, no network, no fees. If you set `OPENAI_API_KEY`, tier copy can optionally be polished by a model — never required.
 

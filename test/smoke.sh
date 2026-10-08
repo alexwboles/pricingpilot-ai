@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# smoke.sh — 11 quick checks for pricingpilot-ai
+# smoke.sh — 16 quick checks for pricingpilot-ai
 set -u
 cd "$(dirname "$0")/.."
 PASS=0; FAIL=0
@@ -42,9 +42,47 @@ if (!/quality guarantees/i.test(rep[2].advice)) { console.error('advice'); proce
 console.log('logic checks ok');
 " && ok "logic: price/clamp/tiers/breakdown/positioning" || bad "logic checks"
 
+node -e "
+var P = require('./lib/logic.js');
+// CSV export: header + one row per quote, tier prices/margins recomputed from stored state
+var st = { inputs: { hours: 4, rate: 75, materials: 120, other: 30, overhead: 15, margin: 40 },
+           multipliers: { budget: 0.85, standard: 1.0, premium: 1.35 },
+           names: { budget: 'Budget', standard: 'Standard', premium: 'Premium' } };
+var qs = [{ id: 'q1', name: 'Smith, kitchen \"refit\"', savedAt: '2026-10-01T00:00:00.000Z', state: st }];
+var csv = P.quotesToCSV(qs);
+var lines = csv.split('\n');
+if (lines.length !== 2) { console.error('csv lines '+lines.length); process.exit(1); }
+if (!/^Quote name,Saved at,Base price/.test(lines[0])) { console.error('csv header'); process.exit(1); }
+if (!/\"Smith, kitchen \"\"refit\"\"\"/.test(lines[1])) { console.error('csv escaping: '+lines[1]); process.exit(1); }
+if (lines[1].indexOf('\$862.50') === -1) { console.error('csv base price missing: '+lines[1]); process.exit(1); }
+if (P.quotesToCSV([]).split('\n').length !== 1) { console.error('csv empty'); process.exit(1); }
+// filterQuotes: case-insensitive, empty query returns all
+var fq = P.filterQuotes(qs, 'SMITH');
+if (fq.length !== 1) { console.error('filter hit'); process.exit(1); }
+if (P.filterQuotes(qs, 'zzz').length !== 0) { console.error('filter miss'); process.exit(1); }
+if (P.filterQuotes(qs, '').length !== 1) { console.error('filter empty query'); process.exit(1); }
+// duplicateQuote: fresh id, (copy) suffix, state preserved
+var dup = P.duplicateQuote(qs, 'q1');
+if (dup.quotes.length !== 2) { console.error('dup len'); process.exit(1); }
+if (!dup.duplicated || dup.duplicated.id === 'q1') { console.error('dup id'); process.exit(1); }
+if (dup.duplicated.name !== 'Smith, kitchen \"refit\" (copy)') { console.error('dup name'); process.exit(1); }
+if (dup.duplicated.state.inputs.hours !== 4) { console.error('dup state'); process.exit(1); }
+var none = P.duplicateQuote(qs, 'nope');
+if (none.duplicated !== null || none.quotes.length !== 1) { console.error('dup missing id'); process.exit(1); }
+// effectiveHourlyRate: price / labor hours, null when hours unknown
+if (P.effectiveHourlyRate(862.5, 4) !== 215.63) { console.error('eff rate '+P.effectiveHourlyRate(862.5, 4)); process.exit(1); }
+if (P.effectiveHourlyRate(862.5, 0) !== null) { console.error('eff zero hours'); process.exit(1); }
+if (P.effectiveHourlyRate(0, 4) !== null) { console.error('eff zero price'); process.exit(1); }
+console.log('new-feature logic checks ok');
+" && ok "logic: CSV export/duplicate/filter/effective-rate" || bad "new-feature logic checks"
+
 grep -q "window.print" js/app.js && grep -q "@media print" css/style.css && ok "print one-pager wired" || bad "print wiring missing"
 grep -q "localStorage" js/app.js && ok "localStorage persistence" || bad "no persistence"
 grep -q "window.PricingPilot" lib/logic.js js/app.js && ok "PricingPilot global wired" || bad "global missing"
+grep -q 'getElementById(.exportQuotes.)\|$("exportQuotes")\|\$('"'"'exportQuotes'"'"')' js/app.js && grep -q 'id="exportQuotes"' index.html && ok "CSV export button wired" || bad "CSV export wiring missing"
+grep -q 'id="quoteSearch"' index.html && grep -q "filterQuotes" js/app.js && ok "quote search wired" || bad "quote search wiring missing"
+grep -q "duplicateQuote" js/app.js lib/logic.js && ok "duplicate quote wired" || bad "duplicate wiring missing"
+grep -q "keydown" js/app.js && grep -q "metaKey" js/app.js && grep -q "Ctrl" index.html && ok "Ctrl/Cmd+Enter shortcut wired" || bad "shortcut wiring missing"
 
 echo "--- smoke: $PASS passed, $FAIL failed ---"
 [ "$FAIL" -eq 0 ]
