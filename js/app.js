@@ -21,13 +21,26 @@
     } catch (e) {}
     return d;
   }
-  function saveState(s) { try { localStorage.setItem(LS_STATE, JSON.stringify(s)); } catch (e) {} }
+  function saveState(s) {
+    try { localStorage.setItem(LS_STATE, JSON.stringify(s)); return true; }
+    catch (e) { alert('Your current changes could not be saved in this browser. Keep this page open and copy your details before closing.'); return false; }
+  }
   var state = loadState();
 
   function loadQuotes() {
-    try { return JSON.parse(localStorage.getItem(LS_QUOTES) || '[]'); } catch (e) { return []; }
+    try {
+      var quotes = JSON.parse(localStorage.getItem(LS_QUOTES) || '[]');
+      if (!Array.isArray(quotes) || quotes.some(function(q) { return !q || typeof q !== 'object' || !q.state || typeof q.state !== 'object'; })) throw new Error('Invalid quote storage');
+      return quotes;
+    } catch (e) {
+      alert('Saved quotes could not be read. Existing stored data has not been overwritten. Stop saving new quotes until the data is recovered.');
+      throw e;
+    }
   }
-  function saveQuotes(q) { try { localStorage.setItem(LS_QUOTES, JSON.stringify(q)); } catch (e) {} }
+  function saveQuotes(q) {
+    try { localStorage.setItem(LS_QUOTES, JSON.stringify(q)); return true; }
+    catch (e) { alert('Quote changes were not saved. Browser storage may be unavailable or full. Existing saved quotes were not changed.'); return false; }
+  }
 
   function esc(s) {
     return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
@@ -286,7 +299,7 @@
     if (!name) { alert('Name the quote first.'); return; }
     var qs = loadQuotes();
     qs.push({ id: 'q' + Date.now(), name: name, savedAt: new Date().toISOString(), state: state });
-    saveQuotes(qs);
+    if (!saveQuotes(qs)) return;
     $('quoteName').value = '';
     renderQuotes();
   });
@@ -318,7 +331,7 @@
       });
       row.querySelector('[data-act="dup"]').addEventListener('click', function () {
         var res = P.duplicateQuote(loadQuotes(), quote.id);
-        saveQuotes(res.quotes);
+        if (!saveQuotes(res.quotes)) return;
         renderQuotes();
         alert('Duplicated as "' + res.duplicated.name + '".');
       });
