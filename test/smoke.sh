@@ -87,5 +87,6 @@ grep -q "keydown" js/app.js && grep -q "metaKey" js/app.js && grep -q "Ctrl" ind
 node test/csv-safety.cjs && ok "CSV formula safety regression" || bad "CSV formula safety regression"
 node test/quote-privacy.cjs && ok "Customer quote privacy regression" || bad "Customer quote privacy regression"
 node test/numeric-validation.cjs && ok "Numeric input validation regression" || bad "Numeric input validation regression"
+node test/stale-price.cjs && ok "Stale quote invalidation regression" || bad "Stale quote invalidation regression"
 echo "--- smoke: $PASS passed, $FAIL failed ---"
 [ "$FAIL" -eq 0 ]

@@ -40,6 +40,19 @@
   var lastRec = null;   // recommendedPrice() result
   var lastTiers = [];   // generateTiers() result
 
+  function invalidatePricing() {
+    lastRec = null;
+    lastTiers = [];
+    $('calcResult').textContent = 'Costs changed. Calculate again before using this price.';
+    $('tierBase').textContent = 'Recalculation required';
+    $('tierMarginTable').textContent = 'Recalculation required';
+    $('posResult').textContent = 'Recalculation required';
+    $('sheetWrap').textContent = 'Costs changed. Recalculate and render a new quote before printing.';
+  }
+  ['inHours','inRate','inMaterials','inOther','inOverhead','inMargin'].forEach(function (id) {
+    $(id).addEventListener('input', invalidatePricing);
+  });
+
   // ---------- nav ----------
   document.querySelectorAll('.topbar nav button').forEach(function (b) {
     b.addEventListener('click', function () {
@@ -101,6 +114,7 @@
   }
 
   function calculate() {
+    $('sheetWrap').textContent = 'Price recalculated. Render a new quote before printing.';
     var raw = readInputs();
     state.inputs = { hours: raw.laborHours, rate: raw.hourlyRate, materials: raw.materials,
       other: raw.other, overhead: raw.overheadPct, margin: raw.marginPct };
