@@ -17,7 +17,7 @@ Type in your costs and PricingPilot AI:
 7. **Effective hourly rate** — see what you actually earn per labor hour at the recommended price and per tier — a sanity check that you're hitting your rate.
 8. **Keyboard shortcut** — Ctrl+Enter (⌘+Enter on Mac) recalculates from anywhere on the estimate step.
 
-Everything runs **locally in the browser** (localStorage). No account, no network, no fees. If you set `OPENAI_API_KEY`, tier copy can optionally be polished by a model — never required.
+Everything runs **locally in the browser** (localStorage). No account, no network, no fees. Pricing and positioning use deterministic calculations and local templates, not an AI model. The OpenAI polish function is an unimplemented extension hook; setting an API key does not enable AI generation.
 
 ## Run it
 No build step. Open `index.html` in a browser, or serve it:
