@@ -228,7 +228,7 @@
     var rows = P.tierMarginTable(lastTiers, lastRec.breakdown.fullCost);
     var page = P.buildOnePager({
       businessName: state.bizName, serviceName: state.svcName,
-      tiers: lastTiers, tierMargins: rows,
+      tiers: lastTiers, tierMargins: $('includeMargins').checked ? rows : [],
       recommendedKey: state.recTier, validDays: state.validDays
     });
     var html = '<div class="sheet-doc"><div class="sheet-head">' +
@@ -244,11 +244,14 @@
         t.features.map(function (f) { return '<li>' + esc(f) + '</li>'; }).join('') + '</ul></div>';
     });
     html += '</div>';
-    html += '<h3>Margin at a glance</h3><table class="margins"><tr><th>Tier</th><th>Price</th><th>Margin</th></tr>';
+    if (page.tierMargins.length) {
+    html += '<h3>Internal copy — profit margins</h3><table class="margins"><tr><th>Tier</th><th>Price</th><th>Margin</th></tr>';
     page.tierMargins.forEach(function (r) {
       html += '<tr><td>' + esc(r.name) + '</td><td>' + money(r.price) + '</td><td>' + r.marginPct + '%</td></tr>';
     });
-    html += '</table><p class="muted small">This quote is valid until ' + esc(page.validUntil) + '.</p>';
+    html += '</table>';
+    }
+    html += '<p class="muted small">This quote is valid until ' + esc(page.validUntil) + '.</p>';
     html += '<div class="sheet-actions no-print"><button id="printSheet" class="primary">Print one-pager</button></div>';
     html += '</div>';
     $('sheetWrap').innerHTML = html;
