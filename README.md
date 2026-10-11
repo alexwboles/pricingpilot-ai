@@ -20,6 +20,9 @@ Type in your costs and PricingPilot AI:
 Everything runs **locally in the browser** (localStorage). No account, no network, no fees. Pricing and positioning use deterministic calculations and local templates, not an AI model. The OpenAI polish function is an unimplemented extension hook; setting an API key does not enable AI generation.
 
 ## Run it
+See [USER-GUIDE.txt](USER-GUIDE.txt) for opening, customer-quote privacy,
+local storage and export limitations. This remains a testing candidate until
+browser, print, recovery and delivery checks are completed.
 No build step. Open `index.html` in a browser, or serve it:
 
 ```bash

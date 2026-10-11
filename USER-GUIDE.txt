@@ -1,0 +1,50 @@
+PRICINGPILOT - CUSTOMER HANDOFF DRAFT
+Release status: testing candidate, not cleared for commercial delivery.
+
+OPENING
+Keep index.html and its css, js and lib folders together. Open index.html in
+Microsoft Edge. No account, API key, payment or dependency installation is needed
+for the local calculator. Actual Edge/file-launch testing is still pending.
+
+MAKE A QUOTE
+1. Enter labor hours, hourly labor cost, materials, other costs, overhead and
+   target profit margin. The hourly cost is your input assumption, not market data.
+2. Calculate. Margin is profit divided by selling price, not markup on cost.
+   Example: cost $100 at 40% margin yields $166.67, not $140.
+3. Review Budget, Standard and Premium prices and margins. Tier multipliers
+   change price only; they do not recalculate costs for upgrades or extra work.
+   If the scope changes, update costs separately before approving the price.
+4. Edit tier inclusions and confirm actual materials, exclusions, scheduling,
+   warranties and charges. Default text is a prompt, not an agreed promise.
+5. Enter business/service details and render the one-pager. Leave the internal
+   profit-margin checkbox OFF for customer copies. Verify the output yourself.
+6. Print or save as PDF with the browser. PDF layout verification is pending.
+
+CHANGES AND SAVING
+Changing cost inputs invalidates the old price and quote. Calculate and render
+again. Tier edits update the scenario and invalidate the rendered quote.
+Name a scenario and save it. If storage fails, the app shows a warning; do not
+assume a quote was saved. Verify it appears in the list and reloads correctly.
+Use one browser tab at a time: concurrent-tab conflict handling is unverified.
+
+WHERE YOUR DATA LIVES
+Scenarios and quotes use this browser's localStorage. There is no shared team
+database or cloud backup. Another browser, profile, machine or location may not
+show the same quotes. Private browsing or clearing browser data can remove them.
+Moving this folder may change access to file-origin storage. Do not rely on
+these browser records as your only business record.
+
+CSV EXPORT IS NOT A FULL BACKUP
+Exported CSV contains quote names, dates, prices and margins, not the full
+scenario or inclusions. There is currently no full backup/import workflow.
+Save approved quote PDFs and retain source assumptions in your own records.
+CSV names that could be formulas are prefixed with an apostrophe for safety.
+
+LIMITATIONS
+The product uses local calculations and templates, not a working AI service.
+Competitor positioning only compares the prices you supply; it does not research
+competitors or verify that their scope matches yours. Prices exclude tax unless
+you explicitly accounted for it. Review rounding and every quote before use.
+No subscription checkout, multi-user service or guaranteed pricing outcome is
+implemented. Storage recovery, extreme inputs, mobile layout and print behavior
+still require release verification.
