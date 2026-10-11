@@ -107,7 +107,7 @@
     lastTiers = P.generateTiers(lastRec ? lastRec.price : 0, opts);
     if (state.features) {
       lastTiers.forEach(function (t) {
-        if (state.features[t.key] && state.features[t.key].length) t.features = state.features[t.key].slice();
+        if (Array.isArray(state.features[t.key])) t.features = state.features[t.key].slice();
       });
     }
     return lastTiers;
@@ -172,7 +172,7 @@
     $('tierEditors').querySelectorAll('input,textarea').forEach(function (el) {
       var k = el.dataset.k, f = el.dataset.f;
       if (f === 'name') state.names[k] = el.value.trim() || k;
-      else if (f === 'mult') { var m = parseFloat(el.value); if (!isNaN(m) && m > 0) state.multipliers[k] = m; }
+      else if (f === 'mult') { var m = P.num(el.value); if (m > 0) state.multipliers[k] = m; }
       else if (f === 'feats') {
         state.features = state.features || {};
         state.features[k] = el.value.split('\n').map(function (s) { return s.trim(); }).filter(Boolean);
@@ -180,6 +180,14 @@
     });
     saveState(state);
   }
+
+  $('tierEditors').addEventListener('input', function () {
+    readTierEditors();
+    computeTiers();
+    renderTierMargins();
+    $('sheetWrap').textContent = 'Tier details changed. Render a new quote before printing.';
+    $('posResult').textContent = 'Tier details changed. Run positioning again.';
+  });
 
   function renderTiersView() {
     if (!lastRec) calculate(); else { computeTiers(); }
