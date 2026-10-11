@@ -19,3 +19,7 @@ for (const enabled of [false,true]) {
 const html = fs.readFileSync(path.join(root,'index.html'),'utf8');
 assert.match(html, /id="includeMargins" type="checkbox">/);
 console.log('Quote privacy: 7 assertions passed (render handler, not browser UI)');
+for (const tier of P.generateTiers(100)) {
+ assert.ok(tier.features.every(feature=>feature.startsWith('Confirm ')), 'default inclusions require business confirmation');
+}
+console.log('Default quote terms: 3 tier checks passed');
