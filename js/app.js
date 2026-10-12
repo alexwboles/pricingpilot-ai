@@ -132,8 +132,20 @@
     state.inputs = { hours: raw.laborHours, rate: raw.hourlyRate, materials: raw.materials,
       other: raw.other, overhead: raw.overheadPct, margin: raw.marginPct };
     saveState(state);
-    lastRec = P.recommendedPrice(raw);
-    computeTiers();
+    try {
+      lastRec = P.recommendedPrice(raw);
+      computeTiers();
+    } catch (error) {
+      lastRec = null;
+      lastTiers = [];
+      $('calcResult').textContent = 'Cannot calculate: ' + error.message;
+      $('calcResult').setAttribute('role', 'alert');
+      $('tierBase').textContent = 'Recalculation required';
+      $('tierMarginTable').textContent = 'Reduce inputs and recalculate before presenting a quote.';
+      $('sheetWrap').textContent = 'No valid quote available. Correct inputs and recalculate.';
+      return;
+    }
+    $('calcResult').removeAttribute('role');
     var c = lastRec.breakdown, segs = P.marginBreakdown(lastRec);
     var effRate = P.effectiveHourlyRate(lastRec.price, c.laborHours);
     var html = '<div class="price-big">' + money(lastRec.price) + '</div>' +
@@ -298,7 +310,7 @@
     var name = $('quoteName').value.trim();
     if (!name) { alert('Name the quote first.'); return; }
     var qs = loadQuotes();
-    qs.push({ id: 'q' + Date.now(), name: name, savedAt: new Date().toISOString(), state: state });
+    qs.push({ id: P.uniqueQuoteId(qs), name: name, savedAt: new Date().toISOString(), state: state });
     if (!saveQuotes(qs)) return;
     $('quoteName').value = '';
     renderQuotes();
