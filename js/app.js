@@ -151,8 +151,28 @@
     $('tierBase').textContent = money(lastRec.price);
     renderTierEditors();
     renderTierMargins();
+    renderWhatIf();
   }
   $('calcBtn').addEventListener('click', calculate);
+
+  // ---------- what-if ----------
+  function renderWhatIf() {
+    var box = $('whatResult');
+    if (!lastRec) { box.innerHTML = '<p class="muted empty">Calculate a price first.</p>'; return; }
+    var d = P.discountImpact(lastRec.price, lastRec.breakdown.fullCost, $('whatDiscount').value);
+    var oh = parseFloat($('whatOverhead').value);
+    var be = P.breakEvenJobs($('whatOverhead').value, lastRec.price, lastRec.breakdown.fullCost);
+    var html = '<div class="kv"><span>' + d.discountPct + '% discount → new price</span><span><strong>' + money(d.newPrice) + '</strong></span></div>' +
+      '<div class="kv"><span>Margin at the discounted price</span><span>' + d.newMarginPct + '% <span class="muted">(−' + d.marginLostPts + ' pts)</span></span></div>' +
+      '<div class="kv"><span>Profit you give up per job</span><span class="profit">' + money(d.profitLost) + '</span></div>';
+    if (!isNaN(oh) && oh > 0) {
+      html += '<div class="kv"><span>Jobs / month to cover ' + money(oh) + ' overhead</span><span>' +
+        (be === null ? '<span class="muted">— price doesn\'t cover cost</span>' : '<strong>' + be + '</strong>') + '</span></div>';
+    }
+    box.innerHTML = html;
+  }
+  $('whatDiscount').addEventListener('input', renderWhatIf);
+  $('whatOverhead').addEventListener('input', renderWhatIf);
 
   // ---------- tiers view ----------
   function renderTierEditors() {
@@ -287,10 +307,21 @@
     html += '</table>';
     }
     html += '<p class="muted small">This quote is valid until ' + esc(page.validUntil) + '.</p>';
-    html += '<div class="sheet-actions no-print"><button id="printSheet" class="primary">Print one-pager</button></div>';
+    html += '<div class="sheet-actions no-print"><button id="printSheet" class="primary">Print one-pager</button> ' +
+      '<button id="copySheet" class="ghost">Copy quote as text</button></div>';
     html += '</div>';
     $('sheetWrap').innerHTML = html;
     $('printSheet').addEventListener('click', function () { window.print(); });
+    var copyBtn = $('copySheet');
+    if (copyBtn) copyBtn.addEventListener('click', function () {
+      var text = P.quoteToText(page);
+      var done = function () {
+        var b = $('copySheet');
+        if (b) { b.textContent = 'Copied!'; setTimeout(function () { b.textContent = 'Copy quote as text'; }, 1400); }
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, done);
+      else done();
+    });
   });
 
   // ---------- saved quotes ----------

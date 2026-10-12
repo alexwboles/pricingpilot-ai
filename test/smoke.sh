@@ -83,6 +83,43 @@ grep -q 'getElementById(.exportQuotes.)\|$("exportQuotes")\|\$('"'"'exportQuotes
 grep -q 'id="quoteSearch"' index.html && grep -q "filterQuotes" js/app.js && ok "quote search wired" || bad "quote search wiring missing"
 grep -q "duplicateQuote" js/app.js lib/logic.js && ok "duplicate quote wired" || bad "duplicate wiring missing"
 grep -q "keydown" js/app.js && grep -q "metaKey" js/app.js && grep -q "Ctrl" index.html && ok "Ctrl/Cmd+Enter shortcut wired" || bad "shortcut wiring missing"
+grep -q 'id="whatDiscount"' index.html && grep -q 'id="whatOverhead"' index.html && grep -q 'id="whatResult"' index.html && grep -q 'id="copySheet"' js/app.js && grep -q "quoteToText" js/app.js && ok "what-if + copy-as-text UI wired" || bad "what-if/copy-text wiring missing"
+
+node -e "
+var P = require('./lib/logic.js');
+// discountImpact: 10% off \$200 with \$120 cost -> \$180, margin 40% -> 33.33%
+var d = P.discountImpact(200, 120, 10);
+if (d.newPrice !== 180) { console.error('newPrice '+d.newPrice); process.exit(1); }
+if (d.newMarginPct !== 33.33) { console.error('newMargin '+d.newMarginPct); process.exit(1); }
+if (d.marginLostPts !== 6.67) { console.error('lost pts '+d.marginLostPts); process.exit(1); }
+if (d.profitLost !== 20) { console.error('profitLost '+d.profitLost); process.exit(1); }
+// clamped discount
+var d2 = P.discountImpact(200, 120, 999);
+if (d2.discountPct !== 90 || d2.newPrice !== 20) { console.error('clamp '+d2.newPrice); process.exit(1); }
+var d0 = P.discountImpact(200, 120, 0);
+if (d0.newPrice !== 200 || d0.profitLost !== 0) { console.error('zero discount'); process.exit(1); }
+// breakEvenJobs
+if (P.breakEvenJobs(2400, 200, 120) !== 30) { console.error('breakeven '+P.breakEvenJobs(2400, 200, 120)); process.exit(1); }
+if (P.breakEvenJobs(2400, 120, 120) !== null) { console.error('no-contrib should be null'); process.exit(1); }
+if (P.breakEvenJobs(2400, 100, 120) !== null) { console.error('loss should be null'); process.exit(1); }
+if (P.breakEvenJobs(0, 200, 120) !== null) { console.error('zero overhead should be null'); process.exit(1); }
+if (P.breakEvenJobs(2450, 200, 120) !== 31) { console.error('ceil '+P.breakEvenJobs(2450, 200, 120)); process.exit(1); }
+// quoteToText: tiers, recommended star, features, validity
+var page = P.buildOnePager({
+  businessName: 'Acme', serviceName: 'Lawn care',
+  tiers: [{ key: 'budget', name: 'Budget', price: 170, features: ['Mow'] },
+          { key: 'standard', name: 'Standard', price: 200, features: ['Mow', 'Edge'] }],
+  tierMargins: [{ name: 'Budget', marginPct: 29.4 }, { name: 'Standard', marginPct: 40 }],
+  recommendedKey: 'standard', validDays: 30
+});
+var t = P.quoteToText(page);
+if (!/^Acme\nLawn care\n/.test(t)) { console.error('header'); process.exit(1); }
+if (t.indexOf('★ STANDARD — \$200.00 (40% margin)') < 0) { console.error('tier line: '+t.split('\n')[4]); process.exit(1); }
+if (t.indexOf('  • Edge') < 0) { console.error('features'); process.exit(1); }
+if (!/valid until/.test(t)) { console.error('validity'); process.exit(1); }
+if (P.quoteToText(null) !== '') { console.error('null page'); process.exit(1); }
+console.log('what-if logic checks ok');
+" && ok "logic: discount/breakeven/quote-text" || bad "what-if logic checks"
 
 node test/csv-safety.cjs && ok "CSV formula safety regression" || bad "CSV formula safety regression"
 node test/quote-privacy.cjs && ok "Customer quote privacy regression" || bad "Customer quote privacy regression"

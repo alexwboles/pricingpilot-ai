@@ -66,6 +66,14 @@
         <h2>Your estimate</h2>
         <div id="calcResult"><p class="muted empty">Run the calculator and your estimate sheet appears here — the number you should charge, with every dollar accounted for.</p></div>
       </div>
+
+      <div class="card sheet">
+        <h2>What-if</h2>
+        <p class="muted small">Stress-test the price before you quote it — discounts and the jobs-per-month you need to stay afloat.</p>
+        <label>Discount % <input id="whatDiscount" type="number" min="0" max="90" value="10"></label>
+        <label>Monthly overhead ($) <input id="whatOverhead" type="number" min="0" step="1" placeholder="2500"></label>
+        <div id="whatResult"><p class="muted empty">Calculate a price first.</p></div>
+      </div>
     </div>
 
     <div class="card quotes">
