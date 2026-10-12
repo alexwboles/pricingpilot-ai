@@ -15,7 +15,8 @@ Passed checks:
 - Fifty duplicates under a fixed clock retain distinct IDs.
 - Edge file-launch in a fresh synthetic profile displays the overflow error and successfully recalculates after correction. External network requests blocked.
 - JavaScript syntax and whitespace checks.
+- Additional Edge checks at desktop and phone widths: save/reload/load/duplicate/delete scenarios, neutralized formula-like CSV names, default omission of internal profit margins from customer quotes, and hiding print controls in print media. All used synthetic data in fresh profiles with network requests blocked.
 
-Not claimed: print/PDF verification, full recovery/import, multi-tab conflict safety, below-cost-tier prevention, corrected hourly-rate terminology, checkout/onboarding or overall commercial readiness.
+Not claimed: actual PDF/paper layout verification, full recovery/import, multi-tab conflict safety, below-cost-tier prevention, corrected hourly-rate terminology, checkout/onboarding or overall commercial readiness. Print-media visibility checks are not a complete printed-output review.
 
 These changes are on a separate local QA branch. They are not pushed, merged, deployed or installed into Project HQ's source preview. No outreach, advertising, paid calls or spending occurred.
