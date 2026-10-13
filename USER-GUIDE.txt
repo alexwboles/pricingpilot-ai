@@ -4,7 +4,8 @@ Release status: testing candidate, not cleared for commercial delivery.
 OPENING
 Keep index.html and its css, js and lib folders together. Open index.html in
 Microsoft Edge. No account, API key, payment or dependency installation is needed
-for the local calculator. Actual Edge/file-launch testing is still pending.
+for the local calculator. Edge/file-launch tests pass with synthetic data in
+fresh profiles. Your own browser/profile storage still needs careful backups.
 
 MAKE A QUOTE
 1. Enter labor hours, hourly labor cost, materials, other costs, overhead and
@@ -18,7 +19,11 @@ MAKE A QUOTE
    warranties and charges. Default text is a prompt, not an agreed promise.
 5. Enter business/service details and render the one-pager. Leave the internal
    profit-margin checkbox OFF for customer copies. Verify the output yourself.
-6. Print or save as PDF with the browser. PDF layout verification is pending.
+6. Print or save as PDF with the browser. The default customer and internal
+   layouts have been verified as one Letter page. Long custom content may
+   need more pages and still requires stress testing; inspect your actual PDF.
+7. Copy quote as text uses clipboard access where available. If access fails,
+   the app reports the failure and exposes selectable text for manual copy.
 
 CHANGES AND SAVING
 Changing cost inputs invalidates the old price and quote. Calculate and render
@@ -45,6 +50,9 @@ The product uses local calculations and templates, not a working AI service.
 Competitor positioning only compares the prices you supply; it does not research
 competitors or verify that their scope matches yours. Prices exclude tax unless
 you explicitly accounted for it. Review rounding and every quote before use.
+Won/lost statuses are labels you enter. The displayed won quoted value is an
+estimated base-price total, not actual payments received or verified revenue.
+Invalid saved prices are disclosed and excluded without deleting their records.
 No subscription checkout, multi-user service or guaranteed pricing outcome is
-implemented. Storage recovery, extreme inputs, mobile layout and print behavior
-still require release verification.
+implemented. Complete backup/recovery, concurrent tabs, packaging and long
+print cases still require release verification. The app is not cleared for sale.

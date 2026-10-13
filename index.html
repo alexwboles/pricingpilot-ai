@@ -57,6 +57,12 @@
           <label class="field"><span class="f-label">Target margin</span>
             <div class="f-input"><input id="inMargin" type="number" min="0" max="95" step="1" value="40"><em>%</em></div></label>
         </div>
+        <div class="field-row">
+          <label class="field"><span class="f-label">Sales tax</span>
+            <div class="f-input"><input id="inTaxPct" type="number" min="0" max="30" step="0.25" placeholder="8"><em>%</em></div></label>
+          <label class="field check-field"><span class="f-label">Display</span>
+            <label class="check"><input id="inTaxOn" type="checkbox"> Show prices with tax included</label></label>
+        </div>
         <button id="calcBtn" class="primary">Calculate recommended price</button>
         <p class="muted small note">Margin is capped at 95%. Negative inputs are treated as zero — nothing leaks in by accident.
           Tip: press <kbd>Ctrl</kbd>+<kbd>Enter</kbd> (<kbd>⌘</kbd>+<kbd>Enter</kbd> on Mac) to recalculate from anywhere on this step.</p>
@@ -66,11 +72,26 @@
         <h2>Your estimate</h2>
         <div id="calcResult"><p class="muted empty">Run the calculator and your estimate sheet appears here — the number you should charge, with every dollar accounted for.</p></div>
       </div>
+
+      <div class="card sheet">
+        <h2>Margin ladder</h2>
+        <p class="muted small">How low can you go before the job stops paying you? The price you'd need to charge to hold each margin.</p>
+        <div id="ladderResult"><p class="muted empty">Calculate a price first.</p></div>
+      </div>
+
+      <div class="card sheet">
+        <h2>What-if</h2>
+        <p class="muted small">Stress-test the price before you quote it — discounts and the jobs-per-month you need to stay afloat.</p>
+        <label>Discount % <input id="whatDiscount" type="number" min="0" max="90" value="10"></label>
+        <label>Monthly overhead ($) <input id="whatOverhead" type="number" min="0" step="1" placeholder="2500"></label>
+        <div id="whatResult"><p class="muted empty">Calculate a price first.</p></div>
+      </div>
     </div>
 
     <div class="card quotes">
       <h2>Saved quotes</h2>
       <p class="muted">Snapshot any scenario and come back to it later.</p>
+      <div id="quoteStats" class="quote-stats" aria-live="polite"></div>
       <div class="field-row">
         <label class="field grow"><span class="f-label">Quote name</span>
           <input id="quoteName" placeholder="e.g. Smith kitchen refit"></label>

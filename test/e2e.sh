@@ -114,14 +114,69 @@ var effRows = P.tierMarginTable(tiers, rec.breakdown.fullCost).map(function (r) 
 t(effRows[0] < effRows[1] && effRows[1] < effRows[2], 'flow9 per-tier effective rates rise with tiers');
 t(P.effectiveHourlyRate(1000, 0) === null, 'flow9 null without labor hours');
 
+// FLOW 10: margin ladder — price to hold each margin target
+var lad = P.marginLadder(100);
+t(lad.length === 5, 'flow10 ladder has 5 rungs');
+eq(lad[0].marginPct, 30, 'flow10 first rung 30%');
+eq(lad[0].price, 142.86, 'flow10 30% price of 100 cost');
+t(lad[4].price < lad[0].price, 'flow10 price falls with margin');
+t(lad.every(function (r) { return r.profit > 0; }), 'flow10 all rungs profitable');
+var custom = P.marginLadder(100, [5]);
+eq(custom.length, 1, 'flow10 custom targets');
+eq(custom[0].price, P.priceFromMargin(100, 5), 'flow10 custom rung matches priceFromMargin');
+
+// FLOW 11: sales tax display math
+eq(P.priceWithTax(100, 8), 108, 'flow11 8% tax');
+eq(P.priceWithTax(199.99, 0), 199.99, 'flow11 no tax');
+eq(P.taxRatePct(-5), 0, 'flow11 negative clamped');
+eq(P.taxRatePct(99), 30, 'flow11 cap at 30');
+var taxedPage = P.buildOnePager({ businessName: 'B', serviceName: 'S',
+  tiers: [{ key: 'standard', name: 'Standard', price: 100, features: [] }],
+  recommendedKey: 'standard', validDays: 30, taxPct: 8, taxOn: true });
+var taxedText = P.quoteToText(taxedPage);
+t(taxedText.indexOf('$108.00') >= 0, 'flow11 quoteToText shows taxed price');
+t(/8% sales tax/.test(taxedText), 'flow11 quoteToText tax note');
+var plainPage = P.buildOnePager({ businessName: 'B', serviceName: 'S',
+  tiers: [{ key: 'standard', name: 'Standard', price: 100, features: [] }],
+  recommendedKey: 'standard', validDays: 30 });
+t(P.quoteToText(plainPage).indexOf('$100.00') >= 0, 'flow11 untaxed text unchanged');
+
+// FLOW 12: win/loss tracking on saved quotes
+var mkq = function (id, inputs, status) {
+  return { id: id, name: 'Q ' + id, savedAt: '2026-10-01T00:00:00Z',
+    state: { inputs: inputs }, status: status };
+};
+var inp = { hours: 2, rate: 75, materials: 120, other: 30, overhead: 15, margin: 40 };
+var qs = [mkq('a', inp, 'won'), mkq('b', inp, 'lost'), mkq('c', inp)];
+t(P.setQuoteStatus(qs, 'c', 'won'), 'flow12 set won');
+t(!P.setQuoteStatus(qs, 'c', 'maybe'), 'flow12 bad status rejected');
+t(!P.setQuoteStatus(qs, 'zzz', 'won'), 'flow12 bad id rejected');
+var st12 = P.winLossStats(qs);
+eq(st12.total, 3, 'flow12 total');
+eq(st12.won, 2, 'flow12 won');
+eq(st12.lost, 1, 'flow12 lost');
+eq(st12.open, 0, 'flow12 open');
+eq(st12.winRatePct, 67, 'flow12 win rate 2/3');
+var expPrice = P.recommendedPrice({ laborHours: 2, hourlyRate: 75, materials: 120, other: 30, overheadPct: 15, marginPct: 40 }).price;
+eq(st12.wonRevenue, P.round2(expPrice * 2), 'flow12 won revenue sums recomputed prices');
+eq(P.winLossStats([]).winRatePct, null, 'flow12 null rate when nothing decided');
+t(P.quotePrice({}) === null, 'flow12 quotePrice null without state');
+
 if (fails.length) { fails.forEach(function (f) { console.error('FAIL: ' + f); }); process.exit(1); }
-console.log('all 9 flows green');
+console.log('all 12 flows green');
 EOF
 if [ $? -eq 0 ]; then
-  for i in 1 2 3 4 5 6 7 8 9; do ok "e2e flow $i"; done
+  for i in 1 2 3 4 5 6 7 8 9 10 11 12; do ok "e2e flow $i"; done
 else
   bad "e2e flows (node assertions failed)"
 fi
+
+# HTML sanity: new second-sweep elements present
+for id in inTaxPct inTaxOn ladderResult quoteStats; do
+  grep -q "id=\"$id\"" index.html && ok "index.html has #$id" || bad "index.html missing #$id"
+done
+grep -q "quoteStats" js/app.js && grep -q "status-sel" js/app.js && grep -q "renderMarginLadder" js/app.js \
+  && ok "win/loss + ladder + tax UI wired" || bad "second-sweep UI wiring"
 
 # HTML sanity: all referenced assets exist
 for f in $(grep -o 'src="[^"]*"\|href="[^"]*"' index.html | cut -d'"' -f2 | grep -v '^http'); do

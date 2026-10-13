@@ -29,7 +29,7 @@ No build step. Open `index.html` in a browser, or serve it:
 npx serve .          # or: python3 -m http.server 8080
 ```
 
-## Pricing vision
+## Future pricing ideas - not implemented or available for purchase
 Free for up to 10 saved quotes · **Pro $19/mo** — unlimited quotes, quote history + win-rate tracking, custom tier templates · **Team $49/mo** — multi-user, branded one-pagers, competitor watch.
 
 ## Tests

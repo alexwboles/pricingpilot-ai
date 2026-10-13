@@ -6,7 +6,7 @@ const source=fs.readFileSync(path.join(__dirname,'../js/app.js'),'utf8');
 const save=source.slice(source.indexOf('  function saveState('),source.indexOf('  var state = loadState();'));
 const quotes=source.slice(source.indexOf('  function loadQuotes('),source.indexOf('  function esc('));
 let raw='[]',fail=false,alerts=[],writes=0;
-const context={LS_STATE:'state',LS_QUOTES:'quotes',alert:msg=>alerts.push(msg),localStorage:{getItem:()=>raw,setItem(){if(fail)throw Error('quota');writes++;}}};
+const context={LS_STATE:'state',LS_QUOTES:'quotes',scenarioRecoveryNeeded:false,alert:msg=>alerts.push(msg),localStorage:{getItem:()=>raw,setItem(){if(fail)throw Error('quota');writes++;}}};
 vm.runInNewContext(save+quotes,context);
 assert.equal(context.saveState({}),true);
 assert.equal(context.saveQuotes([]),true);
