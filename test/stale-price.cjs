@@ -22,11 +22,11 @@ const tierStart=src.indexOf("  $('tierEditors').addEventListener('input', functi
 nodes.tierEditors={addEventListener(event,fn){this[event]=fn;}};
 const tierEnd=src.indexOf('\n  });',tierStart);
 assert.ok(tierStart>=0 && tierEnd>tierStart);
-let reads=0,computes=0,renders=0;
-const tierContext={$:id=>nodes[id],readTierEditors(){reads++;},computeTiers(){computes++;},renderTierMargins(){renders++;}};
+let reads=0,computes=0,renders=0,heroes=0;
+const tierContext={$:id=>nodes[id],readTierEditors(){reads++;},computeTiers(){computes++;},renderTierMargins(){renders++;},renderTierPriceHeroes(){heroes++;}};
 vm.runInNewContext(src.slice(tierStart,tierEnd+6),tierContext);
 nodes.tierEditors.input();
-assert.equal(reads,1);assert.equal(computes,1);assert.equal(renders,1);
+assert.equal(reads,1);assert.equal(computes,1);assert.equal(renders,1);assert.equal(heroes,1);
 assert.match(nodes.sheetWrap.textContent,/Tier details changed/);
 assert.match(nodes.posResult.textContent,/Run positioning again/);
-console.log('Tier synchronization: 6 assertions passed');
+console.log('Tier synchronization: 7 assertions passed');

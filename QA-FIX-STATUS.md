@@ -4,6 +4,8 @@
 
 Reconciled the QA branch with GitHub main `7c2057e`, preserving the new discount, break-even, plain-text quote, margin ladder, tax and win/loss features. Resolved the tax-column/revenue-label conflict without discarding either feature.
 
+GitHub advanced to `5b5b80d` during QA. Its sticky estimate, tier price heroes, live tier recomputation and outcome pills were subsequently merged without dropping the release safeguards. Re-ran the smoke/core suites and browser regressions on that reconciled source: 24 smoke checks and 20 core/asset e2e checks passed. Actual quote rendering also caught an animation/print race that could leave visually blank output despite extractable PDF text; print animations are now disabled. Both regenerated customer and internal PDFs were rendered and visually reviewed after that fix. The PDF test explicitly returns to print media for each output.
+
 Additional fixes and evidence:
 
 - Boolean tax toggles persist across reload; shared scenario normalization also safely loads older partial saved quotes without missing-field crashes.
