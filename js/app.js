@@ -13,6 +13,7 @@
       names: { budget: 'Budget', standard: 'Standard', premium: 'Premium' },
       features: null, // tierKey -> [lines] when user edited inclusions
       bizName: '', svcName: '', validDays: 30, recTier: 'standard',
+      taxPct: 0, taxOn: false,
       competitors: ['', '', '']
     };
     try {
@@ -93,6 +94,7 @@
     $('inOverhead').value = i.overhead; $('inMargin').value = i.margin;
     $('bizName').value = state.bizName; $('svcName').value = state.svcName;
     $('validDays').value = state.validDays; $('recTier').value = state.recTier;
+    $('inTaxPct').value = state.taxPct || ''; $('inTaxOn').checked = !!state.taxOn;
     $('comp1').value = state.competitors[0]; $('comp2').value = state.competitors[1]; $('comp3').value = state.competitors[2];
   }
 
@@ -131,13 +133,18 @@
     var raw = readInputs();
     state.inputs = { hours: raw.laborHours, rate: raw.hourlyRate, materials: raw.materials,
       other: raw.other, overhead: raw.overheadPct, margin: raw.marginPct };
+    state.taxPct = P.taxRatePct($('inTaxPct').value);
+    state.taxOn = $('inTaxOn').checked;
     saveState(state);
     lastRec = P.recommendedPrice(raw);
     computeTiers();
     var c = lastRec.breakdown, segs = P.marginBreakdown(lastRec);
     var effRate = P.effectiveHourlyRate(lastRec.price, c.laborHours);
-    var html = '<div class="price-big">' + money(lastRec.price) + '</div>' +
-      '<p class="price-sub">at your ' + c.marginPct + '% target margin</p>' +
+    var taxOn = state.taxOn && state.taxPct > 0;
+    var displayPrice = taxOn ? P.priceWithTax(lastRec.price, state.taxPct) : lastRec.price;
+    var html = '<div class="price-big">' + money(displayPrice) + '</div>' +
+      (taxOn ? '<p class="price-sub">incl. ' + state.taxPct + '% sales tax (base ' + money(lastRec.price) + ')</p>'
+             : '<p class="price-sub">at your ' + c.marginPct + '% target margin</p>') +
       '<div class="kv"><span>Labor (' + c.laborHours + 'h × ' + money(c.hourlyRate) + ')</span><span>' + money(c.labor) + '</span></div>' +
       '<div class="kv"><span>Materials</span><span>' + money(c.materials) + '</span></div>' +
       '<div class="kv"><span>Other costs</span><span>' + money(c.other) + '</span></div>' +
@@ -151,6 +158,7 @@
     $('tierBase').textContent = money(lastRec.price);
     renderTierEditors();
     renderTierMargins();
+    renderMarginLadder();
     renderWhatIf();
   }
   $('calcBtn').addEventListener('click', calculate);
@@ -173,6 +181,10 @@
   }
   $('whatDiscount').addEventListener('input', renderWhatIf);
   $('whatOverhead').addEventListener('input', renderWhatIf);
+
+  // ---------- second sweep: tax toggle re-renders ----------
+  $('inTaxPct').addEventListener('input', function () { if (lastRec) calculate(); });
+  $('inTaxOn').addEventListener('change', function () { if (lastRec) calculate(); });
 
   // ---------- tiers view ----------
   function renderTierEditors() {
@@ -238,17 +250,34 @@
     var box = $('tierMarginTable');
     if (!lastRec || !lastTiers.length) { box.innerHTML = '<p class="muted">Calculate a price first.</p>'; return; }
     var rows = P.tierMarginTable(lastTiers, lastRec.breakdown.fullCost);
-    var html = '<table class="margins"><tr><th>Tier</th><th>Price</th><th>Margin</th><th>vs target</th><th>Eff. $/hr</th></tr>';
+    var taxOn = state.taxOn && state.taxPct > 0;
+    var html = '<table class="margins"><tr><th>Tier</th><th>Price' + (taxOn ? ' (incl. ' + state.taxPct + '% tax)' : '') + '</th><th>Margin</th><th>vs target</th><th>Eff. $/hr</th></tr>';
     rows.forEach(function (r) {
       var diff = Math.round((r.marginPct - lastRec.breakdown.marginPct) * 10) / 10;
       var note = diff >= 0 ? '+' + diff + ' pts' : diff + ' pts';
       var cls = diff > 0 ? 'delta up' : diff < 0 ? 'delta down' : 'delta';
       var eff = P.effectiveHourlyRate(r.price, lastRec.breakdown.laborHours);
-      html += '<tr><td><strong>' + esc(r.name) + '</strong></td><td>' + money(r.price) + '</td><td>' +
+      html += '<tr><td><strong>' + esc(r.name) + '</strong></td><td>' + money(taxOn ? P.priceWithTax(r.price, state.taxPct) : r.price) + '</td><td>' +
         r.marginPct + '%</td><td><span class="' + cls + '">' + note + '</span></td><td>' +
         (eff === null ? '—' : money(eff)) + '</td></tr>';
     });
     box.innerHTML = html + '</table>';
+  }
+
+  // ---------- second sweep: margin ladder ----------
+  function renderMarginLadder() {
+    var box = $('ladderResult');
+    if (!box) return;
+    if (!lastRec) { box.innerHTML = '<p class="muted empty">Calculate a price first.</p>'; return; }
+    var rows = P.marginLadder(lastRec.breakdown.fullCost);
+    var html = '<table class="margins"><tr><th>Margin held</th><th>Price you must charge</th><th>Profit per job</th><th></th></tr>';
+    rows.forEach(function (r) {
+      var isTarget = Math.round(r.marginPct) === Math.round(lastRec.breakdown.marginPct);
+      html += '<tr' + (isTarget ? ' class="ladder-target"' : '') + '><td><strong>' + r.marginPct + '%</strong></td><td>' +
+        money(r.price) + '</td><td>' + money(r.profit) + '</td><td>' + (isTarget ? '<span class="muted small">your target</span>' : '') + '</td></tr>';
+    });
+    box.innerHTML = html + '</table>' +
+      '<p class="muted small">Floor: at cost (' + money(lastRec.breakdown.fullCost) + ') you make $0. Discount below the 10% line and you are working for exposure.</p>';
   }
 
   // ---------- competitor positioning ----------
@@ -284,8 +313,10 @@
     var page = P.buildOnePager({
       businessName: state.bizName, serviceName: state.svcName,
       tiers: lastTiers, tierMargins: $('includeMargins').checked ? rows : [],
-      recommendedKey: state.recTier, validDays: state.validDays
+      recommendedKey: state.recTier, validDays: state.validDays,
+      taxPct: state.taxPct, taxOn: state.taxOn
     });
+    var sheetTaxOn = page.taxOn && page.taxPct > 0;
     var html = '<div class="sheet-doc"><div class="sheet-head">' +
       '<div class="sheet-biz">' + esc(page.businessName) + '</div>' +
       '<div class="sheet-svc">' + esc(page.serviceName) + '</div>' +
@@ -295,10 +326,12 @@
       var rec = t.key === page.recommendedKey;
       html += '<div class="sheet-tier' + (rec ? ' recommended' : '') + '">' +
         (rec ? '<div class="badge">RECOMMENDED</div>' : '') +
-        '<h3>' + esc(t.name) + '</h3><div class="tier-price">' + money(t.price) + '</div><ul>' +
+        '<h3>' + esc(t.name) + '</h3><div class="tier-price">' +
+        money(sheetTaxOn ? P.priceWithTax(t.price, page.taxPct) : t.price) + '</div><ul>' +
         t.features.map(function (f) { return '<li>' + esc(f) + '</li>'; }).join('') + '</ul></div>';
     });
     html += '</div>';
+    if (sheetTaxOn) html += '<p class="muted small">Prices include ' + page.taxPct + '% sales tax.</p>';
     if (page.tierMargins.length) {
     html += '<h3>Internal copy — profit margins</h3><table class="margins"><tr><th>Tier</th><th>Price</th><th>Margin</th></tr>';
     page.tierMargins.forEach(function (r) {
@@ -339,9 +372,22 @@
     var box = $('quoteList');
     var searchEl = $('quoteSearch');
     var q = searchEl ? searchEl.value : '';
-    var qs = P.filterQuotes(loadQuotes(), q);
+    var allQuotes = loadQuotes();
+    var stats = P.winLossStats(allQuotes);
+    var statsBox = $('quoteStats');
+    if (statsBox) {
+      statsBox.innerHTML = allQuotes.length
+        ? '<span class="stat-pill"><strong>' + stats.won + '</strong> won</span>' +
+          '<span class="stat-pill"><strong>' + stats.lost + '</strong> lost</span>' +
+          '<span class="stat-pill"><strong>' + stats.open + '</strong> open</span>' +
+          (stats.winRatePct === null ? '<span class="muted small">mark quotes won/lost to see your win rate</span>'
+            : '<span class="stat-pill win"><strong>' + stats.winRatePct + '%</strong> win rate</span>' +
+              '<span class="stat-pill"><strong>' + P.money(stats.wonRevenue) + '</strong> won revenue</span>')
+        : '<span class="muted small">Save a quote above — then mark it won or lost to track your close rate.</span>';
+    }
+    var qs = P.filterQuotes(allQuotes, q);
     if (!qs.length) {
-      box.innerHTML = loadQuotes().length
+      box.innerHTML = allQuotes.length
         ? '<p class="muted">No quotes match "' + esc(q) + '".</p>'
         : '<p class="muted">No saved quotes yet.</p>';
       return;
@@ -351,11 +397,22 @@
       var row = document.createElement('div');
       row.className = 'quote-row';
       var d = new Date(quote.savedAt);
-      row.innerHTML = '<div><strong>' + esc(quote.name) + '</strong><br><span class="muted small">saved ' +
-        esc(d.toLocaleDateString()) + '</span></div>' +
-        '<div class="qbtns"><button class="ghost" data-act="load">Load</button> ' +
+      var price = P.quotePrice(quote);
+      row.innerHTML = '<div><strong>' + esc(quote.name) + '</strong>' +
+        (price !== null ? ' · ' + P.money(price) : '') +
+        '<br><span class="muted small">saved ' + esc(d.toLocaleDateString()) + '</span></div>' +
+        '<div class="qbtns"><select class="status-sel" aria-label="Quote outcome">' +
+        ['open', 'won', 'lost'].map(function (s) {
+          return '<option value="' + s + '"' + ((quote.status || 'open') === s ? ' selected' : '') + '>' + s + '</option>';
+        }).join('') + '</select> ' +
+        '<button class="ghost" data-act="load">Load</button> ' +
         '<button class="ghost" data-act="dup">Duplicate</button> ' +
         '<button class="danger" data-act="del">Delete</button></div>';
+      row.querySelector('.status-sel').addEventListener('change', function (e) {
+        var fresh = loadQuotes();
+        P.setQuoteStatus(fresh, quote.id, e.target.value);
+        if (saveQuotes(fresh)) renderQuotes();
+      });
       row.querySelector('[data-act="load"]').addEventListener('click', function () {
         state = quote.state; saveState(state); fillInputs(); calculate();
         alert('Loaded "' + quote.name + '".');
