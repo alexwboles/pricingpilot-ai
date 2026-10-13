@@ -9,6 +9,7 @@ Implemented locally:
 - Generate unique saved/duplicated quote IDs against existing records even within the same millisecond.
 - Require explicit acknowledgment before rendering a quote containing below-cost tiers; declining removes the printable quote rather than leaving a stale sheet.
 - Label the hourly metric as quoted revenue, not take-home pay, in the calculator, tier table and README.
+- Invalid saved scenarios now show a recovery warning, retain the original stored record, disable scenario autosave for that session, and allow calculation using safe defaults. Partial valid field objects retain defaults for missing fields.
 
 Passed checks:
 
@@ -20,6 +21,7 @@ Passed checks:
 - Additional Edge checks at desktop and phone widths: save/reload/load/duplicate/delete scenarios, neutralized formula-like CSV names, default omission of internal profit margins from customer quotes, and hiding print controls in print media. All used synthetic data in fresh profiles with network requests blocked.
 
 - Below-cost acknowledgment acceptance/rejection verified in Edge with synthetic costs; clear calculator revenue terminology checked. This is an acknowledgment safeguard, not a prohibition on deliberately below-cost quotes.
+- Malformed JSON and invalid inputs/competitor containers tested in fresh Edge profiles: original scenario bytes preserved, normal calculations still work, and no startup exceptions occurred. This is damage containment, not a complete recovery/import tool.
 
 Not claimed: actual PDF/paper layout verification, full recovery/import, multi-tab conflict safety, checkout/onboarding or overall commercial readiness. Print-media visibility checks are not a complete printed-output review.
 

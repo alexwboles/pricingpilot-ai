@@ -5,6 +5,7 @@
   var P = window.PricingPilot;
   var LS_STATE = 'pricingpilot.scenario.v1';
   var LS_QUOTES = 'pricingpilot.quotes.v1';
+  var scenarioRecoveryNeeded = false;
 
   function loadState() {
     var d = {
@@ -17,11 +18,31 @@
     };
     try {
       var raw = localStorage.getItem(LS_STATE);
-      if (raw) { var s = JSON.parse(raw); for (var k in s) d[k] = s[k]; }
-    } catch (e) {}
+      if (raw) {
+        var s = JSON.parse(raw);
+        if (!s || typeof s !== 'object' || Array.isArray(s)) throw new Error('Invalid scenario');
+        ['inputs', 'multipliers', 'names'].forEach(function (key) {
+          if (key in s && (!s[key] || typeof s[key] !== 'object' || Array.isArray(s[key]))) throw new Error('Invalid scenario fields');
+        });
+        if ('competitors' in s && !Array.isArray(s.competitors)) throw new Error('Invalid competitors');
+        if ('features' in s && s.features !== null && (typeof s.features !== 'object' || Array.isArray(s.features))) throw new Error('Invalid features');
+        Object.keys(d).forEach(function (k) {
+          if (!(k in s)) return;
+          if (['inputs', 'multipliers', 'names'].indexOf(k) >= 0) {
+            Object.keys(d[k]).forEach(function (field) { if (typeof s[k][field] === 'string' || (typeof s[k][field] === 'number' && Number.isFinite(s[k][field]))) d[k][field] = s[k][field]; });
+          } else if (k === 'features') d[k] = s[k];
+          else if (k === 'competitors') d[k] = s[k].slice(0, 3);
+          else if (typeof s[k] === 'string' || typeof s[k] === 'number') d[k] = s[k];
+        });
+      }
+    } catch (e) {
+      scenarioRecoveryNeeded = true;
+      alert('Your saved scenario could not be read. Its original data has not been overwritten. You can calculate using defaults, but scenario autosave is disabled for this session. Back up the original data before attempting recovery.');
+    }
     return d;
   }
   function saveState(s) {
+    if (scenarioRecoveryNeeded) return false;
     try { localStorage.setItem(LS_STATE, JSON.stringify(s)); return true; }
     catch (e) { alert('Your current changes could not be saved in this browser. Keep this page open and copy your details before closing.'); return false; }
   }
