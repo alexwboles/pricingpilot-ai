@@ -1,5 +1,40 @@
 # Targeted PricingPilot fixes — October 12, 2026
 
+## October 13 full backup milestone
+
+Added versioned local JSON backup and a review-before-restore interface. Full
+backups preserve current form fields, costs, tier names/inclusions, competitor
+values, tax settings, what-if settings, saved outcomes and the unsaved quote name.
+Merge is the default; identical records are skipped and differing ID collisions
+receive new IDs. Replace requires explicit confirmation. Both request a raw
+pre-restore snapshot download and use a durable rollback journal. Unfinished
+transactions recover before loading data on startup; unresolved recovery blocks
+new writes. Raw snapshots preserve damaged stored bytes but are not directly
+importable. Normal backups reject malformed, unsupported, oversized and
+unsafe-priced data without changing existing records (1,000 quotes / 5 MB).
+
+Visual review also caught a saved-quote row overflowing the phone viewport.
+Quote text and action buttons now wrap, and the Edge test asserts no horizontal
+overflow with backup controls open at both tested widths.
+
+Saving a quote now captures current form fields even if the user has not clicked
+Calculate again. Corrupt quote-library data no longer crashes startup; the user
+can reach raw recovery tools. Existing manual data was not touched by QA.
+
+Verified with dependency-free schema/rollback tests and fresh Edge profiles at
+1440 and 390 widths: actual JSON file download/readback, unsaved fields,
+restore cancellation, merge/idempotency, raw pre-restore downloads, replacement,
+customer-margin reset, persisted scenario after reload, corrupt-library byte
+preservation, injected write failure and interrupted-startup rollback. All pass.
+Tax/clipboard/invalid-price and browser-write regressions also pass. Smoke is
+25 passed, 0 failed; core/asset e2e is 21 passed, 0 failed. No network or paid API
+calls, real client records, advertisements or emails were used.
+
+Remaining release gates: ordinary concurrent-tab conflicts (restore-preview
+conflicts alone are checked), long-content print stress, customer packaging and
+onboarding, agreed commercial offer/payment/fulfillment. This is still a review
+branch, not main or Project HQ's installed preview. No sale/payment is verified.
+
 ## October 13 reconciliation and release checks
 
 Reconciled the QA branch with GitHub main `7c2057e`, preserving the new discount, break-even, plain-text quote, margin ladder, tax and win/loss features. Resolved the tax-column/revenue-label conflict without discarding either feature.
@@ -45,4 +80,7 @@ Passed checks:
 
 Not claimed: actual PDF/paper layout verification, full recovery/import, multi-tab conflict safety, checkout/onboarding or overall commercial readiness. Print-media visibility checks are not a complete printed-output review.
 
-These changes are on a separate local QA branch. They are not pushed, merged, deployed or installed into Project HQ's source preview. No outreach, advertising, paid calls or spending occurred.
+The initial October 12 checks above predate the October 13 reconciliation and
+backup milestones. The review branch has been pushed separately to GitHub;
+it is not merged, deployed or installed into Project HQ's source preview.
+No outreach, advertising, paid calls or spending occurred during this QA work.

@@ -6,6 +6,9 @@
   var LS_STATE = 'pricingpilot.scenario.v1';
   var LS_QUOTES = 'pricingpilot.quotes.v1';
   var scenarioRecoveryNeeded = false;
+  var B = window.PricingPilotBackup, storageRecoveryNeeded = false;
+  try { if (B.recover(localStorage)) $('backupStatus').textContent = 'An interrupted restore was rolled back. Previous browser data was recovered.'; }
+  catch (recoveryError) { storageRecoveryNeeded = true; alert('Browser recovery could not finish. Editing will not be saved. Download a raw recovery snapshot before resolving browser storage.'); }
 
   function defaultState() {
     return {
@@ -13,7 +16,7 @@
       multipliers: { budget: 0.85, standard: 1.0, premium: 1.35 },
       names: { budget: 'Budget', standard: 'Standard', premium: 'Premium' },
       features: null, bizName: '', svcName: '', validDays: 30, recTier: 'standard',
-      taxPct: 0, taxOn: false, competitors: ['', '', '']
+      taxPct: 0, taxOn: false, competitors: ['', '', ''], whatDiscount: 10, whatOverhead: ''
     };
   }
   function normalizeState(s) {
@@ -48,7 +51,7 @@
     }
   }
   function saveState(s) {
-    if (scenarioRecoveryNeeded) return false;
+    if (scenarioRecoveryNeeded || (typeof storageRecoveryNeeded !== 'undefined' && storageRecoveryNeeded)) return false;
     try { localStorage.setItem(LS_STATE, JSON.stringify(s)); return true; }
     catch (e) { alert('Your current changes could not be saved in this browser. Keep this page open and copy your details before closing.'); return false; }
   }
@@ -65,6 +68,7 @@
     }
   }
   function saveQuotes(q) {
+    if (typeof storageRecoveryNeeded !== 'undefined' && storageRecoveryNeeded) { alert('Quotes were not saved: resolve the pending recovery first.'); return false; }
     try { localStorage.setItem(LS_QUOTES, JSON.stringify(q)); return true; }
     catch (e) { alert('Quote changes were not saved. Browser storage may be unavailable or full. Existing saved quotes were not changed.'); return false; }
   }
@@ -122,6 +126,7 @@
     $('validDays').value = state.validDays; $('recTier').value = state.recTier;
     $('inTaxPct').value = state.taxPct || ''; $('inTaxOn').checked = !!state.taxOn;
     $('comp1').value = state.competitors[0]; $('comp2').value = state.competitors[1]; $('comp3').value = state.competitors[2];
+    $('whatDiscount').value = state.whatDiscount; $('whatOverhead').value = state.whatOverhead;
   }
 
   function breakdownBar(segs) {
@@ -217,8 +222,9 @@
     }
     box.innerHTML = html;
   }
-  $('whatDiscount').addEventListener('input', renderWhatIf);
-  $('whatOverhead').addEventListener('input', renderWhatIf);
+  ['whatDiscount','whatOverhead'].forEach(function(id) {
+    $(id).addEventListener('input', function() { state[id] = $(id).value; saveState(state); renderWhatIf(); });
+  });
 
   // ---------- second sweep: tax toggle re-renders ----------
   $('inTaxPct').addEventListener('input', function () { if (lastRec) calculate(); });
@@ -430,7 +436,10 @@
   $('saveQuote').addEventListener('click', function () {
     var name = $('quoteName').value.trim();
     if (!name) { alert('Name the quote first.'); return; }
-    var qs = loadQuotes();
+    var qs;
+    try { qs = loadQuotes(); }
+    catch (error) { backupNotice('Saved quotes are unreadable. Download a raw recovery snapshot before restoring a valid backup.', true); return; }
+    state = captureCurrent();
     qs.push({ id: P.uniqueQuoteId(qs), name: name, savedAt: new Date().toISOString(), state: state });
     if (!saveQuotes(qs)) return;
     $('quoteName').value = '';
@@ -441,7 +450,12 @@
     var box = $('quoteList');
     var searchEl = $('quoteSearch');
     var q = searchEl ? searchEl.value : '';
-    var allQuotes = loadQuotes();
+    var allQuotes;
+    try { allQuotes = loadQuotes(); }
+    catch (error) {
+      box.textContent = 'Saved quotes are unreadable. Open Backup & restore to download raw recovery data or review a valid backup.';
+      $('quoteStats').textContent = ''; return;
+    }
     var stats = P.winLossStats(allQuotes);
     var statsBox = $('quoteStats');
     if (statsBox) {
@@ -468,8 +482,9 @@
       row.className = 'quote-row';
       var d = new Date(quote.savedAt);
       var price = P.quotePrice(quote);
+      var outcome = ['open','won','lost'].indexOf(quote.status) >= 0 ? quote.status : 'open';
       row.innerHTML = '<div><strong>' + esc(quote.name) + '</strong>' +
-        ' <span class="qstatus ' + (quote.status || 'open') + '">' + (quote.status || 'open') + '</span>' +
+        ' <span class="qstatus ' + outcome + '">' + outcome + '</span>' +
         (price !== null ? ' · ' + P.money(price) : '') +
         '<br><span class="muted small">saved ' + esc(d.toLocaleDateString()) + '</span></div>' +
         '<div class="qbtns"><select class="status-sel" aria-label="Quote outcome">' +
@@ -504,8 +519,8 @@
     });
   }
 
-  function downloadCSV(filename, text) {
-    var blob = new Blob([text], { type: 'text/csv;charset=utf-8' });
+  function downloadCSV(filename, text, type) {
+    var blob = new Blob([text], { type: type || 'text/csv;charset=utf-8' });
     var a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
     a.download = filename;
@@ -516,9 +531,86 @@
   }
 
   $('exportQuotes').addEventListener('click', function () {
-    var qs = loadQuotes();
-    if (!qs.length) { alert('No saved quotes to export yet.'); return; }
-    downloadCSV('pricingpilot-quotes.csv', P.quotesToCSV(qs));
+    try {
+      var qs = loadQuotes();
+      if (!qs.length) { alert('No saved quotes to export yet.'); return; }
+      downloadCSV('pricingpilot-quotes.csv', P.quotesToCSV(qs));
+    } catch (error) { backupNotice('CSV export failed: ' + error.message + ' Download a raw recovery snapshot to preserve all original data.', true); }
+  });
+
+  // ---------- versioned full backup and recovery ----------
+  var pendingRestore = null, pendingSnapshot = null, importSequence = 0;
+  function backupNotice(message, error) { $('backupStatus').textContent = message; $('backupStatus').dataset.error = String(!!error); }
+  function captureCurrent() {
+    var current = JSON.parse(JSON.stringify(state)), raw = readInputs();
+    current.inputs = {hours:raw.laborHours,rate:raw.hourlyRate,materials:raw.materials,other:raw.other,overhead:raw.overheadPct,margin:raw.marginPct};
+    current.bizName = $('bizName').value; current.svcName = $('svcName').value;
+    current.validDays = $('validDays').value; current.recTier = $('recTier').value;
+    current.taxPct = $('inTaxPct').value; current.taxOn = $('inTaxOn').checked;
+    current.competitors = [$('comp1').value,$('comp2').value,$('comp3').value];
+    current.whatDiscount = $('whatDiscount').value; current.whatOverhead = $('whatOverhead').value;
+    return current;
+  }
+  function recoverySnapshot() {
+    return {format:'pricingpilot-raw-recovery',version:1,exportedAt:new Date().toISOString(),stored:B.snapshot(localStorage),journal:localStorage.getItem(B.KEYS.journal),visibleDraft:captureCurrent(),draftName:$('quoteName').value};
+  }
+  function downloadJSON(name, value) { downloadCSV(name, JSON.stringify(value,null,2), 'application/json;charset=utf-8'); }
+  function cancelRestore() { importSequence++; pendingRestore = null; pendingSnapshot = null; $('restorePreview').hidden = true; $('importBackup').value = ''; }
+  $('exportRecovery').addEventListener('click', function() {
+    try { downloadJSON('pricingpilot-raw-recovery.json', recoverySnapshot()); backupNotice('Raw recovery snapshot download requested. It preserves original storage bytes; it is not directly importable. Keep it private.'); }
+    catch (error) { backupNotice('Recovery snapshot could not be downloaded: ' + error.message, true); }
+  });
+  $('exportBackup').addEventListener('click', function() {
+    try {
+      if (scenarioRecoveryNeeded || storageRecoveryNeeded) throw new Error('Existing storage needs recovery; download a raw recovery snapshot instead.');
+      downloadJSON('pricingpilot-backup.json', B.create(captureCurrent(),loadQuotes(),$('quoteName').value));
+      backupNotice('Full backup download requested. Verify the file is saved before clearing browser data. Contains private costs and quote details.');
+    } catch (error) { backupNotice('Full backup failed: ' + error.message, true); }
+  });
+  $('importBackup').addEventListener('change', async function() {
+    var file = this.files[0], sequence = ++importSequence;
+    pendingRestore = null; pendingSnapshot = null; $('restorePreview').hidden = true;
+    if (!file) return;
+    try {
+      if (storageRecoveryNeeded) throw new Error('Resolve the pending restore journal before importing.');
+      if (file.size > B.LIMIT) throw new Error('Backup exceeds 5 MB.');
+      var data = B.parse(await file.text()); if (sequence !== importSequence) return;
+      pendingSnapshot = B.snapshot(localStorage); pendingRestore = data;
+      $('restoreMode').value = 'merge';
+      $('restoreSummary').textContent = data.quotes.length + ' saved quote(s), plus one current scenario. Exported ' + new Date(data.exportedAt).toLocaleString() + '. Review the mode before restoring.';
+      $('restorePreview').hidden = false; backupNotice('Backup validated. No browser data has changed.');
+    } catch (error) { if (sequence === importSequence) backupNotice('Backup rejected: ' + error.message + ' Existing data was not changed.', true); }
+  });
+  $('cancelRestore').addEventListener('click', function() { cancelRestore(); backupNotice('Restore cancelled. Existing data was not changed.'); });
+  $('restoreBackup').addEventListener('click', function() {
+    if (!pendingRestore) return;
+    try {
+      var replace = $('restoreMode').value === 'replace', merge, next, message;
+      var now = B.snapshot(localStorage);
+      if (now.scenario !== pendingSnapshot.scenario || now.quotes !== pendingSnapshot.quotes) throw new Error('Browser data changed since preview. Choose the file again and review.');
+      if (replace) { next = {scenario:JSON.stringify(pendingRestore.current),quotes:JSON.stringify(pendingRestore.quotes)}; message = 'Replace all saved quotes and the current scenario with this backup? Existing browser data will be replaced. A raw pre-restore recovery snapshot will be downloaded first.'; }
+      else {
+        merge = B.merge(loadQuotes(),pendingRestore.quotes); next = {scenario:now.scenario,quotes:JSON.stringify(merge.quotes)};
+        message = 'Add ' + merge.added + ' quote(s), skip ' + merge.skipped + ' identical record(s), and reassign ' + merge.renamed + ' conflicting ID(s)? Your current draft is kept. A raw pre-restore recovery snapshot will be downloaded first.';
+      }
+      if (!confirm(message)) { backupNotice('Restore not confirmed. Existing data was not changed.'); return; }
+      downloadJSON('pricingpilot-before-restore-' + Date.now() + '.json', recoverySnapshot());
+      B.replace(localStorage,next,pendingSnapshot);
+      if (replace) {
+        state = normalizeState(pendingRestore.current); scenarioRecoveryNeeded = false;
+        fillInputs(); $('quoteName').value = pendingRestore.draftName;
+        $('includeMargins').checked = false; invalidatePricing();
+        $('tierEditors').textContent = ''; $('ladderResult').textContent = 'Recalculation required'; $('whatResult').textContent = 'Recalculation required';
+      }
+      $('quoteSearch').value = ''; cancelRestore(); renderQuotes();
+      backupNotice(replace ? 'Backup restored. Calculate and render again; internal margin display is off.' : 'Merged ' + merge.added + ' quote(s). Current draft preserved. ' + merge.skipped + ' identical record(s) skipped.');
+    } catch (error) {
+      try { storageRecoveryNeeded = !!localStorage.getItem(B.KEYS.journal); } catch (readError) { storageRecoveryNeeded = true; }
+      backupNotice(error.message, true);
+    }
+  });
+  window.addEventListener('storage', function(event) {
+    if (pendingRestore && [LS_STATE,LS_QUOTES,B.KEYS.journal].indexOf(event.key) >= 0) { cancelRestore(); backupNotice('Browser data changed in another tab. Choose the backup again before restoring.', true); }
   });
 
   var searchBox = $('quoteSearch');

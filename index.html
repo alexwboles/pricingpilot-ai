@@ -101,6 +101,23 @@
         <input id="quoteSearch" type="search" placeholder="Search saved quotes…" aria-label="Search saved quotes">
         <button id="exportQuotes" class="ghost">Export CSV</button>
       </div>
+      <details class="backup-tools no-print">
+        <summary>Backup &amp; restore</summary>
+        <p>Full backups include current inputs, tier inclusions, competitor prices, tax settings and saved quote outcomes. They contain private costs: keep them secure. Nothing is uploaded.</p>
+        <div class="qtools">
+          <button id="exportBackup" class="ghost">Download full backup</button>
+          <button id="exportRecovery" class="ghost">Download raw recovery snapshot</button>
+          <label class="backup-file">Review a backup to restore <input id="importBackup" type="file" accept=".json,application/json"></label>
+        </div>
+        <p id="backupStatus" role="status" aria-live="polite"></p>
+        <div id="restorePreview" hidden>
+          <p id="restoreSummary"></p>
+          <label>Restore mode <select id="restoreMode"><option value="merge">Merge saved quotes (keep current draft)</option><option value="replace">Replace library and current scenario</option></select></label>
+          <p>Identical IDs and records are skipped when merging. Different records with the same ID are kept with a new ID. Replacement removes the existing library after confirmation.</p>
+          <button id="restoreBackup" class="primary">Confirm restore…</button>
+          <button id="cancelRestore" class="ghost">Cancel</button>
+        </div>
+      </details>
       <div id="quoteList"><p class="muted">No saved quotes yet.</p></div>
     </div>
   </section>
@@ -189,6 +206,7 @@
 </footer>
 
 <script src="lib/logic.js"></script>
+<script src="lib/backup.js"></script>
 <script src="js/app.js"></script>
 </body>
 </html>

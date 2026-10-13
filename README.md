@@ -16,6 +16,7 @@ Type in your costs and PricingPilot AI:
 6. **Saves quotes** — name and save any pricing scenario to localStorage; reload, duplicate, or delete it later. Search saved quotes by name, and export them all to CSV (tier prices + margins) for your books.
 7. **Quoted revenue per labor hour** — selling price divided by labor hours. This is gross quoted revenue, not profit or take-home pay; materials, overhead and other costs are not deducted from this metric.
 8. **Keyboard shortcut** — Ctrl+Enter (⌘+Enter on Mac) recalculates from anywhere on the estimate step.
+9. **Full local backup and restore** — versioned JSON preserves complete current/saved scenarios, inclusions, tax, competitors, what-if settings and outcomes. Review first, then merge (default) or explicitly replace. Pre-restore recovery downloads and an undo journal protect interrupted writes; malformed backups are rejected. Up to 1,000 quotes / 5 MB. Raw recovery snapshots preserve damaged original storage but are not directly importable. These files contain private costs, not just customer-facing prices.
 
 Everything runs **locally in the browser** (localStorage). No account, no network, no fees. Pricing and positioning use deterministic calculations and local templates, not an AI model. The OpenAI polish function is an unimplemented extension hook; setting an API key does not enable AI generation.
 

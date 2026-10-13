@@ -243,9 +243,11 @@ table.margins tr:last-child td { border-bottom: 0; }
 #quoteList { display: grid; gap: .6rem; margin-top: 1rem; }
 .quote-row {
   display: flex; justify-content: space-between; align-items: center; gap: 1rem;
+  flex-wrap: wrap; min-width: 0;
   border: 1px solid var(--line); border-radius: 0; padding: .7rem .9rem; background: #fbfaf6;
 }
-.quote-row .qbtns { display: flex; gap: .5rem; }
+.quote-row > div:first-child { flex: 1 1 200px; min-width: 0; overflow-wrap: anywhere; }
+.quote-row .qbtns { display: flex; gap: .5rem; flex-wrap: wrap; }
 .qtools { display: flex; gap: .6rem; margin: 0 0 .2rem; flex-wrap: wrap; }
 .qtools input[type="search"] {
   flex: 1; min-width: 180px; padding: .55rem .7rem; font: inherit;
@@ -334,3 +336,10 @@ tr.ladder-target { background: var(--accent-soft); font-weight: 600; }
 }
 .qstatus.won { background: #dcefe4; color: var(--accent-deep); }
 .qstatus.lost { background: #f8dcd4; color: var(--warn); }
+.backup-tools { margin: 1rem 0; padding: .8rem; border: 1px solid var(--line); }
+.backup-tools summary { cursor: pointer; font-weight: 700; }
+.backup-tools p, .backup-file { font-size: .9rem; }
+.backup-tools input[type="file"] { display: block; max-width: 100%; }
+#backupStatus:empty { display: none; }
+#backupStatus[data-error="true"] { color: var(--warn); font-weight: 600; }
+#restorePreview { padding-top: .5rem; border-top: 1px solid var(--line); }

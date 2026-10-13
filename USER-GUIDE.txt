@@ -39,9 +39,34 @@ show the same quotes. Private browsing or clearing browser data can remove them.
 Moving this folder may change access to file-origin storage. Do not rely on
 these browser records as your only business record.
 
+BACKUP AND RESTORE
+Open Backup & restore below Saved quotes. Download full backup saves a local
+versioned JSON file containing the current form, saved quotes, cost assumptions,
+custom tier names/inclusions, competitor values, tax settings, what-if fields,
+outcomes and the unsaved quote name. The file contains private cost information;
+keep it secure. Download confirmation means a download was requested: check that
+your browser actually saved the file before clearing or moving browser storage.
+
+Choose that JSON file to see a restore preview. Merge is the default: it keeps
+your current draft, skips identical records and gives differing ID collisions
+new IDs. Replace restores the library and current scenario; it removes the old
+library only after confirmation. Before either operation, a raw recovery snapshot
+download is requested. Keep it. The app keeps an undo journal while restoring;
+failed/interrupted writes roll back or leave the journal for recovery on reload.
+If recovery cannot finish, stop editing, keep the page open, download raw recovery
+data and resolve browser storage availability. Do not manually clear that journal.
+
+Malformed/unsupported backups are rejected without writes. Version 1 supports
+up to 1,000 saved quotes and 5 MB; invalid or unsupported original records should
+be retained with Download raw recovery snapshot instead of normal JSON export.
+Raw recovery snapshots preserve stored bytes and the visible draft but are NOT
+directly importable. They may require technical recovery. No automatic cloud
+upload or backup service is present. After replacement, internal margins are off;
+calculate and render a new quote before sharing.
+
 CSV EXPORT IS NOT A FULL BACKUP
 Exported CSV contains quote names, dates, prices and margins, not the full
-scenario or inclusions. There is currently no full backup/import workflow.
+scenario or inclusions. Use the full JSON backup to transfer complete scenarios.
 Save approved quote PDFs and retain source assumptions in your own records.
 CSV names that could be formulas are prefixed with an apostrophe for safety.
 
@@ -54,5 +79,5 @@ Won/lost statuses are labels you enter. The displayed won quoted value is an
 estimated base-price total, not actual payments received or verified revenue.
 Invalid saved prices are disclosed and excluded without deleting their records.
 No subscription checkout, multi-user service or guaranteed pricing outcome is
-implemented. Complete backup/recovery, concurrent tabs, packaging and long
+implemented. Concurrent tabs, customer packaging and long
 print cases still require release verification. The app is not cleared for sale.

@@ -126,6 +126,7 @@ node test/quote-privacy.cjs && ok "Customer quote privacy regression" || bad "Cu
 node test/numeric-validation.cjs && ok "Numeric input validation regression" || bad "Numeric input validation regression"
 node test/stale-price.cjs && ok "Stale quote invalidation regression" || bad "Stale quote invalidation regression"
 node test/storage-errors.cjs && ok "Storage failure regression" || bad "Storage failure regression"
+node test/backup.cjs && ok "Full backup and transaction recovery regression" || bad "Full backup and transaction recovery regression"
 grep -q 'data-pricehero' js/app.js && grep -q 'pop-flag' js/app.js && grep -q 'qstatus' js/app.js \
   && grep -q 'card sheet readout' index.html \
   && grep -q 'tier-price-hero' css/style.css && grep -q 'card.readout' css/style.css \
