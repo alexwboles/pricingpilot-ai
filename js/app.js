@@ -196,8 +196,11 @@
       var div = document.createElement('div');
       div.className = 'tier-card tier-' + k;
       div.innerHTML =
+        (k === 'standard' ? '<div class="pop-flag">MOST POPULAR</div>' : '') +
         '<div class="tier-head"><span class="tname">' + esc(state.names[k]) + '</span>' +
         '<span class="tier-mult">' + esc(state.multipliers[k]) + '×</span></div>' +
+        '<div class="tier-price-hero" data-pricehero="' + k + '">' +
+        (tier ? money(tier.price) : money(0)) + '</div>' +
         '<label>Name <input data-k="' + k + '" data-f="name" value="' + esc(state.names[k]) + '"></label>' +
         '<label>Multiplier <input data-k="' + k + '" data-f="mult" type="number" min="0.1" step="0.05" value="' + esc(state.multipliers[k]) + '"></label>' +
         '<label>Inclusions (one per line)<textarea data-k="' + k + '" data-f="feats">' +
@@ -226,9 +229,17 @@
     saveState(state);
   }
 
+  function renderTierPriceHeroes() {
+    (lastTiers || []).forEach(function (t) {
+      var hero = document.querySelector('[data-pricehero="' + t.key + '"]');
+      if (hero) hero.textContent = money(t.price);
+    });
+  }
+
   $('tierEditors').addEventListener('input', function () {
     readTierEditors();
     computeTiers();
+    renderTierPriceHeroes();
     renderTierMargins();
     $('sheetWrap').textContent = 'Tier details changed. Render a new quote before printing.';
     $('posResult').textContent = 'Tier details changed. Run positioning again.';
@@ -399,6 +410,7 @@
       var d = new Date(quote.savedAt);
       var price = P.quotePrice(quote);
       row.innerHTML = '<div><strong>' + esc(quote.name) + '</strong>' +
+        ' <span class="qstatus ' + (quote.status || 'open') + '">' + (quote.status || 'open') + '</span>' +
         (price !== null ? ' · ' + P.money(price) : '') +
         '<br><span class="muted small">saved ' + esc(d.toLocaleDateString()) + '</span></div>' +
         '<div class="qbtns"><select class="status-sel" aria-label="Quote outcome">' +
