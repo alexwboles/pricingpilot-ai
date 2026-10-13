@@ -14,7 +14,7 @@ Type in your costs and PricingPilot AI:
 4. **Checks competitor positioning** — enter 1–3 competitor prices and get a verdict per tier (undercut / aligned / premium) with plain-language positioning advice from local heuristics (e.g. priced 15% above a competitor → "lean on quality guarantees…").
 5. **Prints a price-presentation one-pager** — business + service name, the 3 tiers as cards with a highlighted recommended tier, margin table, and a "valid until" date. Print button with clean print CSS.
 6. **Saves quotes** — name and save any pricing scenario to localStorage; reload, duplicate, or delete it later. Search saved quotes by name, and export them all to CSV (tier prices + margins) for your books.
-7. **Effective hourly rate** — see what you actually earn per labor hour at the recommended price and per tier — a sanity check that you're hitting your rate.
+7. **Quoted revenue per labor hour** — selling price divided by labor hours. This is gross quoted revenue, not profit or take-home pay; materials, overhead and other costs are not deducted from this metric.
 8. **Keyboard shortcut** — Ctrl+Enter (⌘+Enter on Mac) recalculates from anywhere on the estimate step.
 
 Everything runs **locally in the browser** (localStorage). No account, no network, no fees. Pricing and positioning use deterministic calculations and local templates, not an AI model. The OpenAI polish function is an unimplemented extension hook; setting an API key does not enable AI generation.

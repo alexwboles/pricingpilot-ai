@@ -156,7 +156,7 @@
       '<div class="kv"><span>Overhead (' + c.overheadPct + '%)</span><span>' + money(c.overhead) + '</span></div>' +
       '<div class="kv"><strong>Total cost</strong><strong>' + money(c.fullCost) + '</strong></div>' +
       '<div class="kv"><span>Profit baked in</span><span class="profit">' + money(lastRec.profit) + '</span></div>' +
-      '<div class="kv"><span>Effective hourly rate</span><span>' +
+      '<div class="kv"><span>Quoted revenue per labor hour (not take-home pay)</span><span>' +
       (effRate === null ? '<span class="muted">— (enter labor hours)</span>' : money(effRate) + ' / hr') + '</span></div>' +
       '<h3>Price breakdown</h3>' + breakdownBar(segs);
     $('calcResult').innerHTML = html;
@@ -230,7 +230,7 @@
     var box = $('tierMarginTable');
     if (!lastRec || !lastTiers.length) { box.innerHTML = '<p class="muted">Calculate a price first.</p>'; return; }
     var rows = P.tierMarginTable(lastTiers, lastRec.breakdown.fullCost);
-    var html = '<table class="margins"><tr><th>Tier</th><th>Price</th><th>Margin</th><th>vs target</th><th>Eff. $/hr</th></tr>';
+    var html = '<table class="margins"><tr><th>Tier</th><th>Price</th><th>Margin</th><th>vs target</th><th title="Quoted revenue per labor hour, not profit or take-home pay">Revenue / labor hr</th></tr>';
     rows.forEach(function (r) {
       var diff = Math.round((r.marginPct - lastRec.breakdown.marginPct) * 10) / 10;
       var note = diff >= 0 ? '+' + diff + ' pts' : diff + ' pts';
@@ -271,6 +271,11 @@
   }
   $('renderSheet').addEventListener('click', function () {
     if (!lastRec) { alert('Calculate a price first.'); return; }
+    var belowCost = lastTiers.filter(function (tier) { return tier.price < lastRec.breakdown.fullCost; });
+    if (belowCost.length && !confirm('These tiers are below your estimated full cost: ' + belowCost.map(function (tier) { return tier.name + ' (' + money(tier.price) + ')'; }).join(', ') + '. Estimated cost: ' + money(lastRec.breakdown.fullCost) + '. Continue only if you intentionally accept this loss-making price.')) {
+      $('sheetWrap').textContent = 'Quote not generated: adjust below-cost tiers or explicitly acknowledge them before presenting.';
+      return;
+    }
     collectPresent();
     var rows = P.tierMarginTable(lastTiers, lastRec.breakdown.fullCost);
     var page = P.buildOnePager({

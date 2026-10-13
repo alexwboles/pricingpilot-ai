@@ -7,6 +7,8 @@ Implemented locally:
 - Reject unsafe/non-finite calculated costs and prices instead of showing Infinity/NaN.
 - Show an accessible calculation error, clear stale quote results, and recover after correcting inputs.
 - Generate unique saved/duplicated quote IDs against existing records even within the same millisecond.
+- Require explicit acknowledgment before rendering a quote containing below-cost tiers; declining removes the printable quote rather than leaving a stale sheet.
+- Label the hourly metric as quoted revenue, not take-home pay, in the calculator, tier table and README.
 
 Passed checks:
 
@@ -17,6 +19,8 @@ Passed checks:
 - JavaScript syntax and whitespace checks.
 - Additional Edge checks at desktop and phone widths: save/reload/load/duplicate/delete scenarios, neutralized formula-like CSV names, default omission of internal profit margins from customer quotes, and hiding print controls in print media. All used synthetic data in fresh profiles with network requests blocked.
 
-Not claimed: actual PDF/paper layout verification, full recovery/import, multi-tab conflict safety, below-cost-tier prevention, corrected hourly-rate terminology, checkout/onboarding or overall commercial readiness. Print-media visibility checks are not a complete printed-output review.
+- Below-cost acknowledgment acceptance/rejection verified in Edge with synthetic costs; clear calculator revenue terminology checked. This is an acknowledgment safeguard, not a prohibition on deliberately below-cost quotes.
+
+Not claimed: actual PDF/paper layout verification, full recovery/import, multi-tab conflict safety, checkout/onboarding or overall commercial readiness. Print-media visibility checks are not a complete printed-output review.
 
 These changes are on a separate local QA branch. They are not pushed, merged, deployed or installed into Project HQ's source preview. No outreach, advertising, paid calls or spending occurred.
