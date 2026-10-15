@@ -1,0 +1,25 @@
+PRICINGPILOT REVIEW CANDIDATE - NOT A COMMERCIAL RELEASE
+
+This local installer is for controlled review. It is not a subscription,
+cloud service or verified AI service. Installation does not purchase anything.
+No payment, API key, Node, Python or developer setup is required to run it.
+Microsoft Edge must already be installed. Nothing is downloaded by setup.
+
+The normal installer uses your own Windows account, creates Desktop/Start Menu
+shortcuts and an uninstall entry, and does not require administrator access.
+The app opens local files in Microsoft Edge. Keep the installation path stable:
+moving it or changing browser profiles may separate you from browser records.
+Always retain full JSON backups outside the app's installation directory.
+
+The review installer/launcher are unsigned. Windows or organizational policy
+may block them. Do not bypass a security warning, disable protection or use
+administrator access to force installation. Stop and ask TechPartner for an
+approved delivery method. Clean-machine and recipient-side acceptance remain
+pending; tests on this development PC do not prove every customer's setup.
+
+Use only synthetic data during review. Read USER-GUIDE for limitations, privacy,
+tax assumptions, quote review, one-editor access and backup/recovery behavior.
+Uninstall removes known program files and shortcuts, not browser records,
+customer PDFs, backups or unrelated files. Back up before updating/removing.
+No advertising, payment/fulfillment promise or commercial use is approved by
+this review package. TechPartner must agree scope and delivery terms separately.

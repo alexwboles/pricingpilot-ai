@@ -25,8 +25,17 @@ Everything runs **locally in the browser** (localStorage). No account, no networ
 ## Run it
 See [USER-GUIDE.txt](USER-GUIDE.txt) for opening, customer-quote privacy,
 local storage and export limitations. This remains a testing candidate until
-browser, print, recovery and delivery checks are completed.
-No build step. Open `index.html` in a browser, or serve it:
+recipient-side installation, onboarding and commercial delivery are accepted.
+
+A native per-user Windows review installer and GUI launcher are built with
+existing developer compilers. Customers need no Node/Python setup, API key or
+commands. Edge must already be installed. The unsigned candidate has passed an
+isolated QA installation, installed app workflow and file-preserving uninstall
+on the development PC, not a separate clean Windows machine or the normal
+Desktop/registry integration. See [SETUP-NOTICE.txt](SETUP-NOTICE.txt) and
+[packaging/README.md](packaging/README.md). No artifact is published for purchase.
+
+For a source/developer review, no build step: open `index.html` in Edge, or serve it:
 
 ```bash
 npx serve .          # or: python3 -m http.server 8080
@@ -37,8 +46,8 @@ Free for up to 10 saved quotes · **Pro $19/mo** — unlimited quotes, quote his
 
 ## Tests
 ```bash
-bash test/smoke.sh   # 11 checks
-bash test/e2e.sh     # 7 flows
+bash test/smoke.sh   # 25 checks
+bash test/e2e.sh     # 21 core/asset checks
 ```
 
 ## Tech

@@ -2,6 +2,13 @@ PRICINGPILOT - CUSTOMER HANDOFF DRAFT
 Release status: testing candidate, not cleared for commercial delivery.
 
 OPENING
+For a controlled review installer, first read SETUP-NOTICE. Double-click
+PricingPilot-Review-Setup.exe, then launch PricingPilot Review from its Desktop
+or Start Menu shortcut. Setup is per-user; no Node/Python commands or API key
+are needed. Edge must already be installed. Stop at any security-policy warning;
+do not bypass protections. This unsigned candidate is not cleared for sale.
+
+For a source-folder review:
 Keep index.html and its css, js and lib folders together. Open index.html in
 Microsoft Edge. No account, API key, payment or dependency installation is needed
 for the local calculator. Edge/file-launch tests pass with synthetic data in
@@ -90,5 +97,7 @@ Won/lost statuses are labels you enter. The displayed won quoted value is an
 estimated base-price total, not actual payments received or verified revenue.
 Invalid saved prices are disclosed and excluded without deleting their records.
 No subscription checkout, multi-user service or guaranteed pricing outcome is
-implemented. Customer packaging/onboarding and commercial delivery approval
-still require verification. The app is not cleared for sale.
+implemented. An installer candidate passed isolated install, installed-payload
+workflow and uninstall checks on the development PC. The normal Desktop/Start
+Menu/registry flow and a separate clean Windows machine still need acceptance,
+along with commercial delivery approval. The app is not cleared for sale.
