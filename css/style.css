@@ -237,6 +237,14 @@ table.margins tr:last-child td { border-bottom: 0; }
 .sheet-tier ul { margin: 0; padding-left: 1.15rem; font-size: .88rem; color: var(--ink-soft); }
 .sheet-tier li { margin-bottom: .3rem; }
 .sheet-actions { display: flex; justify-content: center; margin-top: 1.6rem; }
+.long-quote .sheet-tiers { display: block; }
+.sheet-tier-table { width: 100%; border-collapse: collapse; margin: 1rem 0; border: 1px solid var(--line); table-layout: fixed; }
+.sheet-tier-table th, .sheet-tier-table td { text-align: left; padding: .6rem .8rem; overflow-wrap: anywhere; }
+.sheet-tier-table th { background: var(--accent-soft); border-bottom: 1px solid var(--line); }
+.sheet-tier-table td { border-bottom: 1px solid var(--line); font-size: .9rem; }
+.sheet-tier-table.recommended { border-color: var(--accent); }
+.sheet-tier-table .tier-price { margin-bottom: 0; }
+.print-length-note { padding: .8rem; background: #fff8e8; }
 
 /* ---------- saved quotes ---------- */
 .quotes .field-row { grid-template-columns: 1fr auto; align-items: end; }
@@ -297,6 +305,13 @@ kbd {
   .sheet-tier ul { font-size: 9pt; line-height: 1.4; }
   .sheet-tier li { margin-bottom: 5px; }
   .sheet-tier.recommended .badge { font-size: 8pt; }
+  .long-quote .sheet-tiers { display: block !important; }
+  .sheet-tier-table { break-inside: auto; margin-bottom: 14px; }
+  .sheet-tier-table thead { display: table-header-group; }
+  .sheet-tier-table tr { break-inside: avoid; }
+  .sheet-tier-table th, .sheet-tier-table td { padding: 7px 10px; }
+  .sheet-tier-table h3 { font-size: 11pt; }
+  .sheet-tier-table td { font-size: 9pt; line-height: 1.4; }
 }
 
 /* ---------- motion ---------- */
@@ -343,3 +358,6 @@ tr.ladder-target { background: var(--accent-soft); font-weight: 600; }
 #backupStatus:empty { display: none; }
 #backupStatus[data-error="true"] { color: var(--warn); font-weight: 600; }
 #restorePreview { padding-top: .5rem; border-top: 1px solid var(--line); }
+.edit-access { display: flex; align-items: center; gap: .8rem; flex-wrap: wrap; margin-bottom: 1rem; padding: .7rem; border: 1px solid var(--line); font-size: .9rem; }
+.edit-access[data-mode="view"] { border-color: var(--gold); background: #fff8e8; }
+button:disabled, input[type="file"]:disabled, select:disabled { cursor: not-allowed; opacity: .55; }

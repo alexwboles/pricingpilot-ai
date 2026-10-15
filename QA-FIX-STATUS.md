@@ -1,5 +1,38 @@
 # Targeted PricingPilot fixes — October 12, 2026
 
+## October 15 editing and print milestone
+
+The release-fix branch now uses a browser-level editing lock for one active
+editor at the same local app path. Simultaneous opens grant exactly one writer;
+additional tabs are visibly view-only. Their cost/tier/presentation changes and
+quote loading remain scratch work, not storage writes. Outcome changes,
+duplicates, deletes and restore are disabled. Backups remain available. Closing
+the editor does not silently replace a reader's scratch draft: explicit reload
+loads the latest data and transfers editing access. Unsupported locking fails
+closed to view-only mode. Startup controls remain inert until access and data
+initialization finish. Recovery-journal writes run only in the editing tab.
+This is same-version local-tab protection, not multi-user collaboration or a
+guarantee against another program/older version modifying browser storage.
+
+Detailed quote stress testing exposed a header-only first page and fragmented
+three-column content. Longer quotes now use a table layout with tier headings
+repeated across continuation pages, and a visible multi-page notice. The
+64-inclusion/long-name/uneven-tier synthetic case has all markers exactly once;
+five-page customer and internal outputs were rendered and every page visually
+reviewed. Customer output has no internal margins; internal output is labeled.
+Default customer/internal Letter quotes remain one page. This is evidence for
+these tested cases, not every possible content length or printer setting.
+
+Fresh Edge checks cover same-context simultaneous opens, writer/reader storage
+separation, quote update propagation, reader backup and explicit access transfer
+at desktop/phone widths, plus unsupported-locking fail-closed behavior. Existing
+backup/recovery, ordinary quote, tax/clipboard and failed-write checks also pass.
+
+Remaining release gates: tested customer packaging and onboarding, commercial
+offer/rights/terms, payment/fulfillment and specific outreach approval. Still no
+verified new sale or payment. No customer data, paid API calls, advertising,
+outbound email, main merge or installed-preview changes were used in this QA.
+
 ## October 13 full backup milestone
 
 Added versioned local JSON backup and a review-before-restore interface. Full

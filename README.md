@@ -17,6 +17,8 @@ Type in your costs and PricingPilot AI:
 7. **Quoted revenue per labor hour** — selling price divided by labor hours. This is gross quoted revenue, not profit or take-home pay; materials, overhead and other costs are not deducted from this metric.
 8. **Keyboard shortcut** — Ctrl+Enter (⌘+Enter on Mac) recalculates from anywhere on the estimate step.
 9. **Full local backup and restore** — versioned JSON preserves complete current/saved scenarios, inclusions, tax, competitors, what-if settings and outcomes. Review first, then merge (default) or explicitly replace. Pre-restore recovery downloads and an undo journal protect interrupted writes; malformed backups are rejected. Up to 1,000 quotes / 5 MB. Raw recovery snapshots preserve damaged original storage but are not directly importable. These files contain private costs, not just customer-facing prices.
+10. **One editing tab** — a browser-level lock makes additional tabs view-only and prevents their temporary calculations from overwriting saved data. Back up a reader draft, close the editor and explicitly reload latest data to transfer access. Unsupported locking fails closed. Tested in Microsoft Edge at the same local app path; not a multi-user database.
+11. **Detailed quote printing** — longer names/inclusions switch to a multi-page table layout with tier headings repeated on continuation pages. Customer output still excludes internal margins by default; review every PDF before sharing.
 
 Everything runs **locally in the browser** (localStorage). No account, no network, no fees. Pricing and positioning use deterministic calculations and local templates, not an AI model. The OpenAI polish function is an unimplemented extension hook; setting an API key does not enable AI generation.
 

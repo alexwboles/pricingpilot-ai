@@ -17,11 +17,14 @@ MAKE A QUOTE
    If the scope changes, update costs separately before approving the price.
 4. Edit tier inclusions and confirm actual materials, exclusions, scheduling,
    warranties and charges. Default text is a prompt, not an agreed promise.
-5. Enter business/service details and render the one-pager. Leave the internal
+5. Enter business/service details and render the quote. Leave the internal
    profit-margin checkbox OFF for customer copies. Verify the output yourself.
 6. Print or save as PDF with the browser. The default customer and internal
-   layouts have been verified as one Letter page. Long custom content may
-   need more pages and still requires stress testing; inspect your actual PDF.
+   layouts have been verified as one Letter page. Detailed quotes automatically
+   use a multi-page table layout with repeated tier headings instead of narrow
+   cards. A long-name/64-inclusion stress example was visually reviewed across
+   five pages with no missing inclusion markers. Inspect your actual PDF;
+   this does not guarantee every possible content length or printer setting.
 7. Copy quote as text uses clipboard access where available. If access fails,
    the app reports the failure and exposes selectable text for manual copy.
 
@@ -30,7 +33,15 @@ Changing cost inputs invalidates the old price and quote. Calculate and render
 again. Tier edits update the scenario and invalidate the rendered quote.
 Name a scenario and save it. If storage fails, the app shows a warning; do not
 assume a quote was saved. Verify it appears in the list and reloads correctly.
-Use one browser tab at a time: concurrent-tab conflict handling is unverified.
+Use the Editing tab for saved changes. The app uses a browser-level lock to give
+only one tab editing access; other tabs clearly show View-only, disable saving,
+outcome changes and restore, and keep calculations as temporary scratch work.
+Backups remain available. Close the editing tab, preserve any reader draft with
+a backup, then use Reload latest data to acquire editing access. Reload discards
+temporary scratch edits in favor of the latest saved scenario. Browsers without
+safe locking stay view-only; use supported Microsoft Edge. This protects tabs
+running this version at the same app path, not older app versions or different
+profiles/copies. There is no collaboration or shared cloud database.
 
 WHERE YOUR DATA LIVES
 Scenarios and quotes use this browser's localStorage. There is no shared team
@@ -79,5 +90,5 @@ Won/lost statuses are labels you enter. The displayed won quoted value is an
 estimated base-price total, not actual payments received or verified revenue.
 Invalid saved prices are disclosed and excluded without deleting their records.
 No subscription checkout, multi-user service or guaranteed pricing outcome is
-implemented. Concurrent tabs, customer packaging and long
-print cases still require release verification. The app is not cleared for sale.
+implemented. Customer packaging/onboarding and commercial delivery approval
+still require verification. The app is not cleared for sale.

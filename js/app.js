@@ -1,13 +1,26 @@
 /* pricingpilot-ai UI — localStorage persistence, no network.
    Uses the shared core: window.PricingPilot (lib/logic.js). */
-(function () {
+(async function () {
   'use strict';
   var P = window.PricingPilot;
   var LS_STATE = 'pricingpilot.scenario.v1';
   var LS_QUOTES = 'pricingpilot.quotes.v1';
   var scenarioRecoveryNeeded = false;
   var B = window.PricingPilotBackup, storageRecoveryNeeded = false;
-  try { if (B.recover(localStorage)) $('backupStatus').textContent = 'An interrupted restore was rolled back. Previous browser data was recovered.'; }
+  var editingAllowed = false, releaseEditingLock = null;
+  // The lock is held for the document lifetime, not a time-based lease that
+  // could expire while a sleeping/background tab still has an unsaved draft.
+  if (navigator.locks && window.isSecureContext) {
+    await new Promise(function(resolve) {
+      navigator.locks.request('pricingpilot-editor:' + location.pathname, {ifAvailable:true}, function(lock) {
+        if (!lock) { resolve(); return; }
+        editingAllowed = true;
+        resolve();
+        return new Promise(function(release) { releaseEditingLock = release; });
+      }).catch(function() { editingAllowed = false; resolve(); });
+    });
+  }
+  try { if (editingAllowed && B.recover(localStorage)) $('backupStatus').textContent = 'An interrupted restore was rolled back. Previous browser data was recovered.'; }
   catch (recoveryError) { storageRecoveryNeeded = true; alert('Browser recovery could not finish. Editing will not be saved. Download a raw recovery snapshot before resolving browser storage.'); }
 
   function defaultState() {
@@ -51,6 +64,7 @@
     }
   }
   function saveState(s) {
+    if (typeof editingAllowed !== 'undefined' && !editingAllowed) return false;
     if (scenarioRecoveryNeeded || (typeof storageRecoveryNeeded !== 'undefined' && storageRecoveryNeeded)) return false;
     try { localStorage.setItem(LS_STATE, JSON.stringify(s)); return true; }
     catch (e) { alert('Your current changes could not be saved in this browser. Keep this page open and copy your details before closing.'); return false; }
@@ -68,6 +82,7 @@
     }
   }
   function saveQuotes(q) {
+    if (typeof editingAllowed !== 'undefined' && !editingAllowed) { alert('Quotes were not saved: this tab is view-only. Close the editing tab and reload latest data to edit.'); return false; }
     if (typeof storageRecoveryNeeded !== 'undefined' && storageRecoveryNeeded) { alert('Quotes were not saved: resolve the pending recovery first.'); return false; }
     try { localStorage.setItem(LS_QUOTES, JSON.stringify(q)); return true; }
     catch (e) { alert('Quote changes were not saved. Browser storage may be unavailable or full. Existing saved quotes were not changed.'); return false; }
@@ -80,6 +95,23 @@
   }
   function money(n) { return P.money(n); }
   function $(id) { return document.getElementById(id); }
+
+  function updateAccessControls() {
+    $('editAccessStatus').textContent = editingAllowed
+      ? 'Editing tab. Other tabs are view-only to protect saved quotes.'
+      : navigator.locks && window.isSecureContext
+        ? 'View-only tab: another tab is editing. Calculations here are temporary and will not be saved. Close the editing tab, back up any draft here, then reload latest data to edit.'
+        : 'View-only: this browser cannot safely coordinate editing tabs. Open the local app in a supported Microsoft Edge browser. Calculations here are temporary and will not be saved.';
+    $('editAccessStatus').parentElement.dataset.mode = editingAllowed ? 'edit' : 'view';
+    $('reloadForEditing').hidden = editingAllowed;
+    ['saveQuote','importBackup','restoreBackup'].forEach(function(id) { $(id).disabled = !editingAllowed || storageRecoveryNeeded; });
+    document.querySelectorAll('.status-sel,[data-act="dup"],[data-act="del"]').forEach(function(el) { el.disabled = !editingAllowed || storageRecoveryNeeded; });
+  }
+  $('reloadForEditing').addEventListener('click', function() {
+    if (confirm('Reload the latest saved data and recheck editing access? Temporary calculations and unsaved draft edits in this tab will be lost. Download a full backup first if you need to keep them.')) location.reload();
+  });
+  window.addEventListener('pagehide', function() { editingAllowed = false; if (releaseEditingLock) releaseEditingLock(); });
+  window.addEventListener('pageshow', function(event) { if (event.persisted) { editingAllowed = false; updateAccessControls(); } });
 
   var lastRec = null;   // recommendedPrice() result
   var lastTiers = [];   // generateTiers() result
@@ -377,13 +409,21 @@
       taxPct: state.taxPct, taxOn: state.taxOn
     });
     var sheetTaxOn = page.taxOn && page.taxPct > 0;
-    var html = '<div class="sheet-doc"><div class="sheet-head">' +
+    var longQuote = page.businessName.length + page.serviceName.length > 180 || page.tiers.some(function(t) { return t.features.length > 10 || t.features.join(' ').length > 1400; });
+    var html = '<div class="sheet-doc' + (longQuote ? ' long-quote' : '') + '">' +
+      (longQuote ? '<p class="no-print print-length-note" role="status">Detailed quote: uses a multi-page layout with repeated tier headings. Review the PDF before sharing.</p>' : '') + '<div class="sheet-head">' +
       '<div class="sheet-biz">' + esc(page.businessName) + '</div>' +
       '<div class="sheet-svc">' + esc(page.serviceName) + '</div>' +
       '<p class="sheet-meta">Priced with PricingPilot AI · ' + esc(page.generated) + ' · Valid until ' + esc(page.validUntil) + '</p></div>';
     html += '<div class="sheet-tiers">';
     page.tiers.forEach(function (t) {
       var rec = t.key === page.recommendedKey;
+      if (longQuote) {
+        html += '<table class="sheet-tier-table' + (rec ? ' recommended' : '') + '"><thead><tr><th>' +
+          (rec ? '<span class="badge">RECOMMENDED</span> ' : '') + '<h3>' + esc(t.name) + '</h3><div class="tier-price">' + money(sheetTaxOn ? P.priceWithTax(t.price, page.taxPct) : t.price) + '</div></th></tr></thead><tbody>' +
+          t.features.map(function(f) { return '<tr><td>• ' + esc(f) + '</td></tr>'; }).join('') + '</tbody></table>';
+        return;
+      }
       html += '<div class="sheet-tier' + (rec ? ' recommended' : '') + '">' +
         (rec ? '<div class="badge">RECOMMENDED</div>' : '') +
         '<h3>' + esc(t.name) + '</h3><div class="tier-price">' +
@@ -400,7 +440,7 @@
     html += '</table>';
     }
     html += '<p class="muted small">This quote is valid until ' + esc(page.validUntil) + '.</p>';
-    html += '<div class="sheet-actions no-print"><button id="printSheet" class="primary">Print one-pager</button> ' +
+    html += '<div class="sheet-actions no-print"><button id="printSheet" class="primary">Print quote</button> ' +
       '<button id="copySheet" class="ghost">Copy quote as text</button></div>';
     html += '</div>';
     $('sheetWrap').innerHTML = html;
@@ -517,6 +557,7 @@
       });
       box.appendChild(row);
     });
+    updateAccessControls();
   }
 
   function downloadCSV(filename, text, type) {
@@ -572,6 +613,7 @@
     pendingRestore = null; pendingSnapshot = null; $('restorePreview').hidden = true;
     if (!file) return;
     try {
+      if (!editingAllowed) throw new Error('This tab is view-only. Close the editing tab and reload latest data before restoring.');
       if (storageRecoveryNeeded) throw new Error('Resolve the pending restore journal before importing.');
       if (file.size > B.LIMIT) throw new Error('Backup exceeds 5 MB.');
       var data = B.parse(await file.text()); if (sequence !== importSequence) return;
@@ -585,6 +627,7 @@
   $('restoreBackup').addEventListener('click', function() {
     if (!pendingRestore) return;
     try {
+      if (!editingAllowed) throw new Error('Restore is disabled in this view-only tab.');
       var replace = $('restoreMode').value === 'replace', merge, next, message;
       var now = B.snapshot(localStorage);
       if (now.scenario !== pendingSnapshot.scenario || now.quotes !== pendingSnapshot.quotes) throw new Error('Browser data changed since preview. Choose the file again and review.');
@@ -606,11 +649,13 @@
       backupNotice(replace ? 'Backup restored. Calculate and render again; internal margin display is off.' : 'Merged ' + merge.added + ' quote(s). Current draft preserved. ' + merge.skipped + ' identical record(s) skipped.');
     } catch (error) {
       try { storageRecoveryNeeded = !!localStorage.getItem(B.KEYS.journal); } catch (readError) { storageRecoveryNeeded = true; }
+      updateAccessControls();
       backupNotice(error.message, true);
     }
   });
   window.addEventListener('storage', function(event) {
     if (pendingRestore && [LS_STATE,LS_QUOTES,B.KEYS.journal].indexOf(event.key) >= 0) { cancelRestore(); backupNotice('Browser data changed in another tab. Choose the backup again before restoring.', true); }
+    if (!editingAllowed && event.key === LS_QUOTES) renderQuotes();
   });
 
   var searchBox = $('quoteSearch');
@@ -627,4 +672,7 @@
 
   fillInputs();
   renderQuotes();
+  updateAccessControls();
+  document.querySelector('main').inert = false;
+  document.querySelector('main').setAttribute('aria-busy','false');
 })();

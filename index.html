@@ -24,7 +24,11 @@
   </div>
 </header>
 
-<main class="wrap">
+<main class="wrap" inert aria-busy="true">
+  <div class="edit-access no-print" role="status" aria-live="polite">
+    <span id="editAccessStatus">Checking editing access…</span>
+    <button id="reloadForEditing" class="ghost" hidden>Reload latest data</button>
+  </div>
 
   <!-- STEP 1: CALCULATOR -->
   <section id="view-calc" class="view">
@@ -95,7 +99,7 @@
       <div class="field-row">
         <label class="field grow"><span class="f-label">Quote name</span>
           <input id="quoteName" placeholder="e.g. Smith kitchen refit"></label>
-        <div class="field align-end"><button id="saveQuote" class="primary">Save current scenario</button></div>
+        <div class="field align-end"><button id="saveQuote" class="primary" disabled>Save current scenario</button></div>
       </div>
       <div class="qtools">
         <input id="quoteSearch" type="search" placeholder="Search saved quotes…" aria-label="Search saved quotes">
@@ -107,7 +111,7 @@
         <div class="qtools">
           <button id="exportBackup" class="ghost">Download full backup</button>
           <button id="exportRecovery" class="ghost">Download raw recovery snapshot</button>
-          <label class="backup-file">Review a backup to restore <input id="importBackup" type="file" accept=".json,application/json"></label>
+          <label class="backup-file">Review a backup to restore <input id="importBackup" type="file" accept=".json,application/json" disabled></label>
         </div>
         <p id="backupStatus" role="status" aria-live="polite"></p>
         <div id="restorePreview" hidden>
@@ -166,7 +170,7 @@
     <div class="page-head">
       <div>
         <p class="eyebrow">Step 3 — Present quote</p>
-        <h1>A one-pager worth signing</h1>
+        <h1>A quote worth sharing</h1>
         <p class="lede">A clean, printable price sheet your customer can say yes to on the spot.</p>
       </div>
     </div>
@@ -191,7 +195,7 @@
       </div>
       <label><input id="includeMargins" type="checkbox"> Internal copy: include profit margins (not for customers)</label>
       <p class="muted small">Review all tier inclusions, warranties and scheduling promises before sharing.</p>
-      <button id="renderSheet" class="primary">Render one-pager</button>
+      <button id="renderSheet" class="primary">Render quote</button>
     </div>
 
     <div class="card sheet-page" id="sheetWrap">
