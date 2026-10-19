@@ -29,8 +29,14 @@
   var state = loadState();
 
   function loadQuotes() {
+    var raw;
     try {
-      var quotes = JSON.parse(localStorage.getItem(LS_QUOTES) || '[]');
+      raw = localStorage.getItem(LS_QUOTES);
+    } catch (e) {
+      return []; // storage blocked (e.g. sandboxed iframe): read-only mode, no saved quotes
+    }
+    try {
+      var quotes = JSON.parse(raw || '[]');
       if (!Array.isArray(quotes) || quotes.some(function(q) { return !q || typeof q !== 'object' || !q.state || typeof q.state !== 'object'; })) throw new Error('Invalid quote storage');
       return quotes;
     } catch (e) {
