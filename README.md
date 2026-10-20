@@ -48,7 +48,17 @@ Free for up to 10 saved quotes · **Pro $19/mo** — unlimited quotes, quote his
 ```bash
 bash test/smoke.sh   # 25 checks
 bash test/e2e.sh     # 21 core/asset checks
+node test/qa-blocked-storage.cjs # headless Edge: blocked storage, synthetic data
 ```
+
+The review branch incorporates main's blocked-storage startup handling. If saved
+quotes cannot be read, the calculator remains usable for temporary estimates,
+but scenario autosave, quote saving and restore are disabled until storage is
+resolved and the page is reloaded. The library explicitly says unavailable,
+not empty; unseen quotes are never replaced with an empty list. Synthetic Edge
+tests cover both quote-only and complete read blocking, unchanged original
+storage, and no startup errors. This newer source is not included in the earlier
+Windows review installer artifact; rebuilt-package acceptance remains pending.
 
 ## Tech
 Pure static HTML/CSS/JS. Core logic lives in `lib/logic.js`, shared between the browser and Node tests (UMD wrapper) — so the math the tests verify is exactly the math the UI runs.

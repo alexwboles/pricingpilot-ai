@@ -6,6 +6,7 @@
   var LS_STATE = 'pricingpilot.scenario.v1';
   var LS_QUOTES = 'pricingpilot.quotes.v1';
   var scenarioRecoveryNeeded = false;
+  var quoteStorageUnavailable = false;
   var B = window.PricingPilotBackup, storageRecoveryNeeded = false;
   var editingAllowed = false, releaseEditingLock = null;
   // The lock is held for the document lifetime, not a time-based lease that
@@ -72,8 +73,21 @@
   var state = loadState();
 
   function loadQuotes() {
+    if (quoteStorageUnavailable) return [];
+    var raw;
     try {
-      var quotes = JSON.parse(localStorage.getItem(LS_QUOTES) || '[]');
+      raw = localStorage.getItem(LS_QUOTES);
+    } catch (e) {
+      // An unreadable library is not an empty library. Keep calculations usable,
+      // but fail closed for this session rather than overwrite unseen quotes.
+      quoteStorageUnavailable = true;
+      editingAllowed = false;
+      alert('Saved quotes cannot be read in this browser. Calculations are temporary; saving and restoring are disabled. Existing data has not been overwritten. Resolve browser storage and reload before editing.');
+      if (typeof updateAccessControls === 'function') updateAccessControls();
+      return [];
+    }
+    try {
+      var quotes = JSON.parse(raw || '[]');
       if (!Array.isArray(quotes) || quotes.some(function(q) { return !q || typeof q !== 'object' || !q.state || typeof q.state !== 'object'; })) throw new Error('Invalid quote storage');
       return quotes;
     } catch (e) {
@@ -97,7 +111,9 @@
   function $(id) { return document.getElementById(id); }
 
   function updateAccessControls() {
-    $('editAccessStatus').textContent = editingAllowed
+    $('editAccessStatus').textContent = quoteStorageUnavailable
+      ? 'View-only: saved quotes cannot be read. Calculations are temporary; saving and restoring are disabled. Resolve browser storage and reload before editing.'
+      : editingAllowed
       ? 'Editing tab. Other tabs are view-only to protect saved quotes.'
       : navigator.locks && window.isSecureContext
         ? 'View-only tab: another tab is editing. Calculations here are temporary and will not be saved. Close the editing tab, back up any draft here, then reload latest data to edit.'
@@ -494,6 +510,10 @@
     try { allQuotes = loadQuotes(); }
     catch (error) {
       box.textContent = 'Saved quotes are unreadable. Open Backup & restore to download raw recovery data or review a valid backup.';
+      $('quoteStats').textContent = ''; return;
+    }
+    if (quoteStorageUnavailable) {
+      box.textContent = 'Saved quotes are unavailable, not empty. Resolve browser storage and reload before editing. Existing data has not been overwritten.';
       $('quoteStats').textContent = ''; return;
     }
     var stats = P.winLossStats(allQuotes);
