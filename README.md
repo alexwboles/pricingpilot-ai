@@ -60,5 +60,11 @@ tests cover both quote-only and complete read blocking, unchanged original
 storage, and no startup errors. This newer source is not included in the earlier
 Windows review installer artifact; rebuilt-package acceptance remains pending.
 
+October 22: a new dated local review candidate now includes these source fixes
+and passes isolated installed-payload and blocked-storage browser tests. See
+`packaging/README.md` for the artifact checksum and remaining gates. The prior
+candidate is preserved; normal Windows integration, clean-machine/recipient and
+commercial-delivery acceptance remain pending. Neither artifact is published.
+
 ## Tech
 Pure static HTML/CSS/JS. Core logic lives in `lib/logic.js`, shared between the browser and Node tests (UMD wrapper) — so the math the tests verify is exactly the math the UI runs.

@@ -1,10 +1,16 @@
 param(
   [Parameter(Mandatory=$true)][string]$NsisCompiler,
-  [string]$QaInstallRoot
+  [string]$QaInstallRoot,
+  [string]$OutputDirectory
 )
 $ErrorActionPreference = 'Stop'
 $sourceRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
 $buildRoot = Join-Path $sourceRoot 'output\windows-review'
+if ($OutputDirectory) {
+  $buildRoot = [IO.Path]::GetFullPath($OutputDirectory)
+  $outputPrefix = [IO.Path]::GetFullPath((Join-Path $sourceRoot 'output')) + '\'
+  if (!$buildRoot.StartsWith($outputPrefix,[StringComparison]::OrdinalIgnoreCase)) { throw 'Build output must stay in a subdirectory of this checkout output folder' }
+}
 $stageRoot = Join-Path $buildRoot 'stage'
 New-Item -ItemType Directory -Force -Path $stageRoot | Out-Null
 $compiler = Join-Path $env:WINDIR 'Microsoft.NET\Framework64\v4.0.30319\csc.exe'

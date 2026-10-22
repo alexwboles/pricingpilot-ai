@@ -2,6 +2,10 @@ const assert = require('node:assert/strict');
 const path = require('node:path');
 const {pathToFileURL} = require('node:url');
 const {chromium} = require('C:/Users/alexw/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
+const sourceRoot = path.resolve(__dirname,'..');
+const appRoot = process.argv[2] ? path.resolve(process.argv[2]) : sourceRoot;
+assert(!process.argv[2] || appRoot.startsWith(path.join(sourceRoot,'output/installer-qa')+path.sep),
+       'Installed checks must stay inside isolated installer QA directories');
 
 (async () => {
   const browser = await chromium.launch({channel:'msedge',headless:true});
@@ -25,7 +29,7 @@ const {chromium} = require('C:/Users/alexw/.cache/codex-runtimes/codex-primary-r
           return read.call(this,key);
         };
       }, mode);
-      await page.goto(pathToFileURL(path.join(__dirname,'../index.html')).href, {waitUntil:'domcontentloaded'});
+      await page.goto(pathToFileURL(path.join(appRoot,'index.html')).href, {waitUntil:'domcontentloaded'});
       await page.locator('main[aria-busy=false]').waitFor();
       assert.equal(await page.locator('main').evaluate(el=>el.inert),false);
       assert.match(await page.locator('#editAccessStatus').innerText(),/View-only: saved quotes cannot be read/);
