@@ -56,6 +56,25 @@ was removed. Use a new QA directory for another clean run.
 
 ## Remaining gates
 
+October 23 normal Windows integration check: the unchanged October 22 package
+passed a fresh per-user silent install on the development PC. The product
+folder, Desktop shortcut, Start Menu folder and uninstall registration were
+all absent before testing. Installed payload hashes, launcher `--check`, all
+four shortcut targets and uninstall registry fields were verified. Normal
+uninstall removed its files, shortcuts and registry entry while preserving a
+synthetic unrelated-file sentinel. Only that generated sentinel was then removed
+and the now-empty test product directory deleted, restoring pre-test absence.
+No existing product, browser data or user document was touched. The retained
+installer can reproduce this temporary test installation.
+
+`test/qa-normal-install.ps1 -InstallerPath <absolute-review-installer-path>
+-ExpectedHash <sha256>` reproduces this check. It requires the package to be
+inside this checkout's output tree with the exact checksum, refuses any existing
+normal installation/integration target, does not open a browser, and cleans up
+only its newly created product targets. It never recursively deletes a folder.
+This verifies shell/registry integration and launcher prerequisites, not visible
+installer screens, actual shortcut-click browser launch or a clean recipient PC.
+
 October 22 isolated rebuild: the current application source, including the
 blocked-storage safeguards, was packaged separately in
 `output/windows-review-20261022/PricingPilot-Review-Setup.exe` (121,783 bytes,
@@ -71,8 +90,9 @@ preserved an unrelated synthetic sentinel. The in-place `_?=` QA invocation
 leaves its own `Uninstall.exe` beside that sentinel; no recursive cleanup is
 performed. Real Desktop/Start Menu and registry integration were omitted in QA.
 
-- Separate clean-machine and recipient-side normal setup/shortcut/uninstall
-  acceptance; the QA-mode test does not prove these integrations.
+- Separate clean-machine and recipient-side setup, actual shortcut-launch and
+  onboarding acceptance. Development-PC normal integration is now checked,
+  but neither that nor QA-mode testing proves a clean recipient installation.
 - Unsigned executable/security-policy compatibility. Do not bypass warnings.
 - Agreed commercial license/offer, delivery and payment/fulfillment workflow.
 - Specific approval before publishing or sending any artifact/client message.

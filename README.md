@@ -66,5 +66,11 @@ and passes isolated installed-payload and blocked-storage browser tests. See
 candidate is preserved; normal Windows integration, clean-machine/recipient and
 commercial-delivery acceptance remain pending. Neither artifact is published.
 
+October 23: normal per-user setup, shortcut targets, uninstall registration,
+launcher prerequisites and clean removal were verified on the development PC
+using that same candidate. The temporary test installation was removed; no
+existing app was replaced. Clean recipient-PC, actual shortcut-launch/onboarding
+and commercial-delivery acceptance remain open.
+
 ## Tech
 Pure static HTML/CSS/JS. Core logic lives in `lib/logic.js`, shared between the browser and Node tests (UMD wrapper) — so the math the tests verify is exactly the math the UI runs.
