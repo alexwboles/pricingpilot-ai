@@ -9,6 +9,8 @@ are needed. Edge must already be installed. Stop at any security-policy warning;
 do not bypass protections. This unsigned candidate is not cleared for sale.
 
 For a source-folder review:
+The portable ZIP contains the same app and START-HERE.txt with a six-step
+practice workflow. Extract the complete folder before opening index.html.
 Keep index.html and its css, js and lib folders together. Open index.html in
 Microsoft Edge. No account, API key, payment or dependency installation is needed
 for the local calculator. Edge/file-launch tests pass with synthetic data in
@@ -98,6 +100,9 @@ estimated base-price total, not actual payments received or verified revenue.
 Invalid saved prices are disclosed and excluded without deleting their records.
 No subscription checkout, multi-user service or guaranteed pricing outcome is
 implemented. An installer candidate passed isolated install, installed-payload
-workflow and uninstall checks on the development PC. The normal Desktop/Start
-Menu/registry flow and a separate clean Windows machine still need acceptance,
-along with commercial delivery approval. The app is not cleared for sale.
+workflow and uninstall checks on the development PC. The normal per-user
+Desktop/Start Menu/registry installation and removal were also checked there.
+Actual shortcut-click launch, a separate recipient's setup and onboarding,
+unsigned-policy compatibility and commercial delivery still need acceptance.
+The portable review avoids an executable installer but still needs the
+recipient's normal launch, quote and backup checks. Neither is cleared for sale.

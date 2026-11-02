@@ -27,6 +27,13 @@ See [USER-GUIDE.txt](USER-GUIDE.txt) for opening, customer-quote privacy,
 local storage and export limitations. This remains a testing candidate until
 recipient-side installation, onboarding and commercial delivery are accepted.
 
+A portable review ZIP can be built with [packaging/build-portable.ps1](packaging/build-portable.ps1).
+Extract the complete folder, read START-HERE.txt, and open index.html with
+Microsoft Edge. It includes no executable installer or customer data. The
+six-step practice checklist covers a known price, saved quote, customer copy
+and full backup/merge. Packaging verification does not replace recipient-side
+launch and first-use acceptance; this review copy is not a commercial release.
+
 A native per-user Windows review installer and GUI launcher are built with
 existing developer compilers. Customers need no Node/Python setup, API key or
 commands. Edge must already be installed. The unsigned candidate has passed an

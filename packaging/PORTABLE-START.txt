@@ -1,0 +1,58 @@
+PRICINGPILOT — PORTABLE REVIEW
+
+An offline quote calculator for a small service business.
+This review does not start a subscription or send any information to TechPartner.
+Prices come from your cost inputs and local formulas, not a live AI service.
+
+OPEN IT
+1. Extract the whole ZIP into a folder you plan to keep. Do not open the app
+   from inside the ZIP, and keep its css, js and lib folders together.
+2. Right-click index.html, choose Open with, then Microsoft Edge.
+   No installer, account, API key, terminal or administrator access is needed.
+3. Wait for "Editing tab." before saving. If you see View-only, close any other
+   copy at this path and use Reload latest data. If policy or storage blocks
+   access, stop and tell TechPartner; do not disable security protections.
+
+YOUR FIRST PRACTICE QUOTE — USE MADE-UP DATA
+1. Estimate costs: enter 1 labor hour, $100 hourly cost, $0 materials,
+   $0 other costs, 0% overhead and 40% target margin. Click Calculate.
+   The recommended price should be $166.67. This is margin, not markup.
+2. Save it with the name "Practice quote". Reload the page, then load that
+   saved quote. The hourly cost should still be $100.
+3. Build tiers: review each price and its actual scope. Price multipliers do
+   not add extra materials or labor to your costs. Edit the inclusions yourself.
+4. Present quote: use a made-up business and job name. Leave internal profit
+   margins OFF, render the quote, and review it before printing or saving a PDF.
+   The customer copy should not show your internal margin table.
+5. Return to Estimate costs. Open Backup & restore, then Download full backup.
+   Check that the JSON file exists in Downloads. Keep a copy outside this app
+   folder. A CSV export is a summary, not a full backup.
+6. Choose the JSON file in Backup & restore. Review the preview, keep Merge,
+   and apply. Your practice quote should not be duplicated. Retain the requested
+   pre-restore recovery download too. Do not use Replace for this first check.
+
+BEFORE USING REAL BUSINESS INFORMATION
+- Tell TechPartner whether these six checks worked and which browser you used.
+  This package remains a review candidate until your launch and workflow work.
+- Keep this folder at a stable path and use the same browser/profile. Data is
+  stored in that browser, not in the ZIP. Moving folders, switching profiles or
+  clearing browsing data may separate you from saved records.
+- Keep regular JSON backups and customer PDFs in your own secure records.
+  Backups include private cost information. Nothing is uploaded automatically.
+- Review scope, costs, tax assumptions, tier promises and the final PDF yourself.
+  Won quote totals are estimates, not payments received. There is no invoicing,
+  card charging, bank integration or shared team database.
+
+NEED HELP?
+Report the step number, the visible error and your Edge/Windows version through
+your existing TechPartner conversation. Do not send passwords, API keys or real
+customer files just to report a problem. Read USER-GUIDE.txt for recovery details.
+
+UPDATING OR REMOVING
+Download and verify a full JSON backup before any update or move. Keep old
+folders and backups until the new copy is verified. Removing extracted files
+does not remove browser records. No setup/uninstall script is included.
+
+Review status: packaging and source checks do not prove recipient-side launch.
+Any service scope, price, billing period, delivery and payment terms must be
+agreed separately. This package creates no purchase or ongoing charge.

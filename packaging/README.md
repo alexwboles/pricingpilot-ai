@@ -1,5 +1,19 @@
 # Native Windows review package
 
+## Portable review alternative
+
+`build-portable.ps1 -OutputDirectory <new-absolute-path-under-checkout-output>`
+builds an allowlisted ZIP of the app and START-HERE guide. It requires only
+Windows PowerShell's archive support for the developer build. The recipient
+extracts the complete folder and opens index.html with Microsoft Edge, without
+an installer, executable launcher, terminal, account or API key. It does not
+change the app's browser storage or add cloud backup. Existing package paths
+and redirected paths are rejected. MANIFEST.json lists payload sizes/hashes
+and source revision. See PORTABLE-SDLC.md for scope and acceptance requirements.
+
+This is a review alternative, not a cleared commercial release. Verify the
+recipient's normal launch, quote and backup workflow before accepting handoff.
+
 Internal testing candidate only. Building an installer does not authorize its
 publication, sale, signing purchases, client email or deployment. The existing
 GitHub review branch is separate from main and Project HQ's installed snapshot.
